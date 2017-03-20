@@ -59,10 +59,14 @@ except AttributeError:
 
 # Convert from uint8 representation with values between 0 and 255 to
 # a floating point representation with values between 0 and 1.
-face = face / 255
-
+print type(face)
+print face.dtype
+face = face.astype('float') / 255
+print type(face)
+print face.dtype
 # downsample for higher speed
 face = face[::2, ::2] + face[1::2, ::2] + face[::2, 1::2] + face[1::2, 1::2]
+
 face /= 4.0
 height, width = face.shape
 
