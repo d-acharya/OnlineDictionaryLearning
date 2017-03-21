@@ -1,12 +1,14 @@
+#include "mathOperations.h"
+
 /*
 	Computes and returns L1 norm of a vector
 	X : n x 1 array
 */
-double l1norm(double * X, int n){
+double l1Norm(double * X, int n){
 	double Xnorm = 0;
 	int i;
 	for(i = 0; i < n; i++){
-		Xnorm += abs(X[i]);
+		Xnorm += fabs(X[i]);
 	}
 	return Xnorm;
 }
@@ -59,10 +61,10 @@ void vecDiff(double * a, double * b, double * c, int n){
 	w : sizeOfW double array
 	M : size sizeOfV x sizeOfW double array
 */
-void vecVecProd(double * v, double *w, double *M, int sizeOfV, int sizeOfW){
+void cross(double * v, double *w, double *M, int sizeOfV, int sizeOfW){
 	int i,j;
 	for(i = 0; i < sizeOfV; i++){
-		for(j = 0; j < sozeOfW; j++){
+		for(j = 0; j < sizeOfW; j++){
 			M[i*sizeOfW+j] = v[i]*w[j];
 		}
 	}
@@ -74,7 +76,7 @@ void vecVecProd(double * v, double *w, double *M, int sizeOfV, int sizeOfW){
 	w : sizeOfW double array
 	M : size sizeOfV x sizeOfW double array
 */
-double vecVecDot(double * v, int n){
+double dot(double * v, int n){
 	int i;
 	double sum;
 	sum = 0;
@@ -94,7 +96,7 @@ double trace(double *A, int size){
 	double sum;
 	sum = 0;
 	
-	for(i = 0; i <= n*n; i=i+n+1){
+	for(i = 0; i <= size*size; i=i+size+1){
 		sum += A[i];
 	}
 	

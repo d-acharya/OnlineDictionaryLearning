@@ -1,5 +1,3 @@
-include "mkl.h"
-
 /*
 	Computes cost to be used for LARS in step 4 of Algorithm 1.
 	D : rows x cols matrix
@@ -14,11 +12,11 @@ double larsCost(double * D, double * x, double * a, int cols, int rows, double l
 	double * diff = (double *)mkl_calloc(rows * sizeof(double), sizeof(double));
 	double * prod = (double *)mkl_calloc(rows * sizeof(double), sizeof(double));
 	
-	vecMatProd(D, a, prod, cols, rows);
+	matVecProd(D, a, prod, cols, rows);
 	vecDiff(x, prod, diff, rows);
 	
 	double cost;
-	cost = 0.5 * l2norm(diff) + lambda * l1norm(X);
+	cost = 0.5 * l2Norm(diff) + lambda * l1Norm(x);
 
 	mkl_free(diff);
 	mkl_free(prod);
@@ -32,11 +30,11 @@ double larsCost(double * D, double * x, double * a, int cols, int rows, double l
 	A : cols x cols matrix
 	B : rows x rows matrix
 */
-double updateCost(D, A, B, rows, cols){
-	return (Trace(D^TDA) - Trace(D^TB));
-	
-	
-}
+// double updateCost(D, A, B, rows, cols){
+// 	return (Trace(D^TDA) - Trace(D^TB));
+// 	
+// 	
+// }
 
 /*	
 	Cost to be optimized while updating dictionary. Step 7 in Algorithm 1.
@@ -44,7 +42,7 @@ double updateCost(D, A, B, rows, cols){
 	A : cols x cols matrix
 	B : rows x rows matrix
 */
-void updateDict(D, A, B, int rows, int cols){
-	
-	
-}
+// void updateDict(D, A, B, int rows, int cols){
+// 	
+// 	
+// }
