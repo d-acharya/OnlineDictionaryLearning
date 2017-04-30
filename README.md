@@ -18,4 +18,4 @@
 * Complete Implementation:
   * Implementation of LARS (Check FISTA implementation in above [matlab implementation](https://github.com/tiepvupsu/DICTOL/blob/master/utils/fista.m)). Possibly replace LARS with FISTA as done in the matlab implementation.
 * Pathwise coordinate descent:
-  * surpass LARS since 2008?
+  * has surpassed LARS since 2008?
