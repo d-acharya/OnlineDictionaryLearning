@@ -21,3 +21,4 @@
   * has surpassed LARS since 2008?
 * pseudo code line 4, page 487, http://statweb.stanford.edu/~tibs/ftp/lars.pdf
   * how to find A1?
+* matrix inversion function http://www.sanfoundry.com/cpp-program-implement-gauss-jordan-elimination/
