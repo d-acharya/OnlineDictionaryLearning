@@ -32,7 +32,7 @@ double l2Norm(double * X, int n){
 	v : rows x 1 array
 	u : cols x 1 array 
 */
-double matVecProd(double * M, double * v, double * u, int cols, int rows){
+void matVecProd(double * M, double * v, double * u, int cols, int rows){
 	int i,j;	
 	for(i = 0; i < rows; i++){
 		u[i] = 0;
