@@ -17,3 +17,5 @@
   * For testing, see python implementation [dictionary learnning](https://github.com/d-acharya/OnlineDictionaryLearning/blob/master/dict_learning.py) and [image denoising](https://github.com/d-acharya/OnlineDictionaryLearning/blob/master/plot_image_denoising.py). We still need to create a wrapper to call our C implementation of dictionary learning from above python scripts.
 * Complete Implementation:
   * Implementation of LARS (Check FISTA implementation in above [matlab implementation](https://github.com/tiepvupsu/DICTOL/blob/master/utils/fista.m)). Possibly replace LARS with FISTA as done in the matlab implementation.
+* Pathwise coordinate descent:
+  * surpass LARS since 2008?
