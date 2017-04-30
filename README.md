@@ -19,5 +19,5 @@
   * Implementation of LARS (Check FISTA implementation in above [matlab implementation](https://github.com/tiepvupsu/DICTOL/blob/master/utils/fista.m)). Possibly replace LARS with FISTA as done in the matlab implementation.
 * Pathwise coordinate descent:
   * has surpassed LARS since 2008?
-* line 5, page 487, http://statweb.stanford.edu/~tibs/ftp/lars.pdf
+* pseudo code line 4, page 487, http://statweb.stanford.edu/~tibs/ftp/lars.pdf
   * how to find A1?
