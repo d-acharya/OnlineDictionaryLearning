@@ -12,6 +12,8 @@
 **Matlab Implementation**
 [Github](https://github.com/tiepvupsu/DICTOL)
 
+**C++ LARS IMplementation**
+[Github](https://github.com/varung/larscpp/tree/master/src)
 #### **ToDos**
 * Test Script:
   * For testing, see python implementation [dictionary learnning](https://github.com/d-acharya/OnlineDictionaryLearning/blob/master/dict_learning.py) and [image denoising](https://github.com/d-acharya/OnlineDictionaryLearning/blob/master/plot_image_denoising.py). We still need to create a wrapper to call our C implementation of dictionary learning from above python scripts.
