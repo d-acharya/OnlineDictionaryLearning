@@ -12,7 +12,7 @@
 **Matlab Implementation**
 [Github](https://github.com/tiepvupsu/DICTOL)
 
-**C++ LARS IMplementation**
+**C++ LARS Implementation**
 [Github](https://github.com/varung/larscpp/tree/master/src)
 #### **ToDos**
 * Test Script:
