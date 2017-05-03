@@ -1,0 +1,3 @@
+// line 161
+// cblas_ddot...
+dot(&X[N*c1], &X[N*c2], N)
