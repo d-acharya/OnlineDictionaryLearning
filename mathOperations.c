@@ -1,6 +1,6 @@
 #include "mathOperations.h"
 
-/* 
+/*
 	NOTE: use assert to check if input is compatible
 	e.g. in case of index compatibility in matrix*matrix multiplication
 */
@@ -31,14 +31,14 @@ double l2Norm(double * X, int n){
 	return sqrt(Xnorm);
 }
 
-/*
+/* This is replaced by mvm. Currently this exists so that your code does not break down.
 	Computes the product M x v and stores values in u
 	M : cols x rows array
 	v : rows x 1 array
-	u : cols x 1 array 
+	u : cols x 1 array
 */
 void matVecProd(double * M, double * v, double * u, int cols, int rows){
-	int i,j;	
+	int i,j;
 	for(i = 0; i < rows; i++){
 		u[i] = 0;
 		for(j = 0; j < cols; j++){
@@ -46,6 +46,7 @@ void matVecProd(double * M, double * v, double * u, int cols, int rows){
 		}
 	}
 }
+
 
 /*
 	Computes difference of vectors and stores in third vector
@@ -93,96 +94,119 @@ double dot(double * v, double * w, int n){
 
 /*
 	Computes trace of
-	A : square matrix 
+	A : square matrix
 	size : size of matrix A
 */
 double trace(double *A, int size){
 	int i;
 	double sum;
 	sum = 0;
-	
+
 	for(i = 0; i <= size*size; i=i+size+1){
 		sum += A[i];
 	}
-	
+
 	return sum;
 }
 
 /*
 	n,m: A is n*m and B is m*n and C is  n*n
 	TODO: check implementation
-*/
+
 
 
 void gramMatrix(double * A, double * AtA, double rows, double cols){
-	mmm(A, true, A, AtA, rows, cols);
+	mmm(A, true, A, AtA, rows, cols, cols);
 }
-
+*/
 
 /*
 	C=A*B multiplication
 	transposeA indicates whether to transpose A
-	A is matrix of size n*m
-	B is matrix of size m*l
-	C is matrix of size n*l
+	A is matrix of size Arows*Acols
+	B is matrix of size Acols*Bcols
+	C is matrix of size Arows*Bcols
 */
-void mmm(double *A, bool transposeA, double *B, double *C, int n, int m, int l){
-	
+void mmm(double *A, bool transposeA, double *B, double *C, int Arows, int Acols, int Bcols){
+    int i, j, k;
+
 	if (transposeA){
-
-	}
-
-	int i, j, k;
-	for(i = 0; i < n; i++){
-		for(j = 0; j < m; j++){
-			for(k = 0; k < l; k++){
-				C[i*n+j] += A[i*n+l]+B[j*m+l];
+        for(i = 0; i < Acols; i++){
+			for(j = 0; j < Bcols; j++){
+				for(k = 0; k < Arows; k++){
+					C[i*Bcols+j] += A[k*Acols+i]*B[k*Bcols+j];
+				}
+			}
+		}
+	} else {
+		for(i = 0; i < Arows; i++){
+			for(j = 0; j < Bcols; j++){
+				for(k = 0; k < Acols; k++){
+					C[i*Bcols+j] += A[i*Acols+k]*B[k*Bcols+j];
+				}
 			}
 		}
 	}
+
 }
 
 
 /*
-	a*M*v multiplication 
+	a*M*v multiplication
 	a is a constant
 	M is a rows*cols matrix
 	v is vector
 	trans indicates whether to use transpose of M
 */
 void amvm(double a, double * M, bool trans, double * v, double * w, int rows, int cols){
-	
-	if (trans){
-
-	}
-
-	int i,j;	
-	for(i = 0; i < rows; i++){
-		u[i] = 0;
-		for(j = 0; j < cols; j++){
-			u[i] += M[i * rows + j] * v[j] ;
-		}
-	}
-
+  int i ,j;
+  if (trans){
+    for(i = 0; i < cols; i++){
+      w[i] = 0;
+      for(j = 0; j < rows; j++){
+        w[i] += M[j * cols + i] * v[j] ;
+      }
+      w[i] *=a;
+    }
+  } else {
+    for(i = 0; i < rows; i+=1){
+      w[i] = 0;
+      for(j = 0; j < cols; j++){
+        w[i] += M[i * cols + j] * v[j] ;
+      }
+      w[i] *=a;
+    }
+  }
 }
 
 
 /*
-	M*v multiplication 
+	same as amvm but without multiplication by constant.
+	M*v multiplication
 	M is a rows*cols matrix
 	v is vector
 	trans indicates whether to use transpose of M
 */
 void mvm(double * M, bool trans, double * v, double * w, int rows, int cols){
-	
-	
-	if (trans){
-
-	}
-
-
+	int i ,j;
+  if (trans){
+    for(i = 0; i < cols; i++){
+      w[i] = 0;
+      for(j = 0; j < rows; j++){
+        w[i] += M[j * cols + i] * v[j] ;
+      }
+      w[i] *=a;
+    }
+  } else {
+    for(i = 0; i < rows; i+=1){
+      w[i] = 0;
+      for(j = 0; j < cols; j++){
+        w[i] += M[i * cols + j] * v[j] ;
+      }
+      w[i] *=a;
+    }
+  }
 }
-
 
 /*
 	Y=a*X+Y addition
@@ -190,7 +214,6 @@ void mvm(double * M, bool trans, double * v, double * w, int rows, int cols){
 	X is a vector of length size
 	Y is a vector of length size
 */
-
 void daxpy(double a, double * X, double * Y, double * Y, int size){
 	int i;
 	for(i = 0; i < size; i++){
