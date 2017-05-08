@@ -1,10 +1,14 @@
+#include "OnlineDictionaryLearning.h"
+#include "mathOperations.h"
+#include <cstdlib>
+
 DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in) :
-Dt(Dt_in), m(m_in), k(k_in) {
+m(m_in), k(k_in) {
   Dt = (Real*) malloc(m * k * sizeof(Real));
   A = (Real*) malloc(k * k * sizeof(Real));
   B = (Real*) malloc(m * k * sizeof(Real));
-  tmp = (Real*) calloc(m * sizeof(Real));
-  lars_ptr = new Lars(Dt, y, m, k, lambda_in); //TODO refactor Lars for y
+  tmp = (Real*) calloc(m, sizeof(Real));
+  lars_ptr = new Lars(Dt, m, k, lambda_in); //TODO refactor Lars for y
 }
 
 void DictionaryLearning::update_dict() {
@@ -23,7 +27,7 @@ void DictionaryLearning::update_dict() {
         tmp[t] = (B[t*k + j] - da_j_t) / A[j*k + j] + Dt[j*k + t];
       }
 
-      double base = 1.0 / max(l2Norm(tmp, m), 1.0);
+      double base = 1.0 / fmax(l2Norm(tmp, m), 1.0);
 
       for (int t = 0; t < m; t++) {
         double temp = base * tmp[t];
@@ -51,7 +55,7 @@ void DictionaryLearning::recover(Real *const x, Real*const x_r) {
     int l = lars_ptr->active_itr;
     memset(x_r, 0, m * sizeof(Real));
     for (int i = 0; i < l; i++)
-      axpy(alpha[i].v, Dt + alpha[i].id * m, x_r, x_r, m)
+      axpy(alpha[i].v, Dt + alpha[i].id * m, x_r, m);
 }
 
 void DictionaryLearning::sparse_coding(Real *const x) {
@@ -64,10 +68,11 @@ void DictionaryLearning::iterate(Real *const x) { // run line 4-7 of algorithm 1
   Idx *alpha = lars_ptr->beta;
   int l = lars_ptr->active_itr;
   // A += alpha*alpha.T, B += x*alpha.T
-  for (int i = 0; i < l; i++)
+  for (int i = 0; i < l; i++) {
     for (int j = 0; j < l; j++)
       A[alpha[j].id * k + alpha[i].id] += alpha[i].v * alpha[j].v;
     for (int j = 0; j < m; j++)
       B[j * k + alpha[i].id] += x[j] * alpha[i].v;
+  }
   update_dict();
 }

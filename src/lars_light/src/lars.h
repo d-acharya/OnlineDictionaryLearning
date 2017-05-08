@@ -36,7 +36,7 @@ struct Lars {
 
   // allocate all needed memory
   // input fixed numbers
-  Lars(int D_in, int K_in, Real lambda_in);
+  Lars(const Real *Xt_in, int D_in, int K_in, Real lambda_in);
 
   ~Lars();
 
@@ -54,8 +54,8 @@ struct Lars {
   Real compute_lambda(); // compute lambda given beta
 };
 
-Lars::Lars(int D_in, int K_in, Real lambda_in):
-    D(D_in), K(K_in), lambda(lambda_in) {
+Lars::Lars(const Real *Xt_in, int D_in, int K_in, Real lambda_in):
+    Xt(Xt_in), D(D_in), K(K_in), lambda(lambda_in) {
 
   beta = (Idx*) calloc(D, sizeof(Idx));
   beta_old = (Idx*) calloc(D, sizeof(Idx));
@@ -75,7 +75,7 @@ Lars::Lars(int D_in, int K_in, Real lambda_in):
 }
 
 void Lars::set_y(const Real *y_in) {
-  y = y_in; 
+  y = y_in;
 
   memset(beta, 0, D*sizeof(Idx));
   memset(beta_old, 0, D*sizeof(Idx));

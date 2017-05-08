@@ -1,6 +1,5 @@
 #include "util.h"
 #include "lars.h"
-
 #ifndef DICTIONARY_LEARNING_H
 #define DICTIONARY_LEARNING_H
 struct DictionaryLearning {
