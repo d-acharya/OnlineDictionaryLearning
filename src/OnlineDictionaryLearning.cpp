@@ -55,7 +55,7 @@ void DictionaryLearning::recover(Real *const x, Real*const x_r) {
 }
 
 void DictionaryLearning::sparse_coding(Real *const x) {
-  lars_ptr->init(x); //reset temporary data in Lars, and set Lars.y to x
+  lars_ptr->set_y(x); //reset temporary data in Lars, and set Lars.y to x
   lars_ptr->solve();
 }
 
