@@ -214,7 +214,7 @@ void mvm(double * M, bool trans, double * v, double * w, int rows, int cols){
 	X is a vector of length size
 	Y is a vector of length size
 */
-void daxpy(double a, double * X, double * Y, double * Y, int size){
+void axpy(double a, double * X, double * Y, double * Y, int size){
 	int i;
 	for(i = 0; i < size; i++){
 		Y[i] = a*X[i] + Y[i];
