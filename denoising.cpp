@@ -11,13 +11,18 @@ more args can be added later
 #include "opencv2/opencv.hpp"
 
 cv::Mat_<float> generate2DPatches(cv::Mat_<float> img, int patchHeight, int patchWidth);
-cv::Mat_<float> reconstructFromPatches(cv::Mat_<float> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth);
+cv::Mat_<float> reconstructImgFromPatches(cv::Mat_<float> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth);
 
 int main(int argc, char ** argv){
 
+	// constants used for computations
 	// define patchHeight and patchWidth
 	int patchHeight = 5;
 	int patchWidth = 5;
+	int nComponents = 100;
+	// lengthOfComponent is lengthOfPatch
+	int lengthOfComponent = patchHeight*patchWidth;
+	int nIterations = 1000;
 
 	if(argc < 2){
 		std::cout << "Usage: ./test imageToLearnDictionary imageToDenoise." << std::endl;
@@ -62,8 +67,14 @@ int main(int argc, char ** argv){
 
 	// dictionary learning part
 	// TODO: needs to be completed: learn a dictionary
-	dictLearningOnline(double * X, int n_features, int n_samples, int n_components, double alpha);
-
+	// TODO: dictLearningOnline(double * X, int n_features, int n_samples, int n_components, double alpha);
+	cv::Mat_<float> initialDictionary(nComponents, lengthOfComponent);
+	cv::randn(initialDictionary, 0.0, 1.0);
+	DictionaryLearning learnDict(regularizationParameter, initialDictionary, lengthOfComponent, nComponents);
+	
+	for(int i = 0; i < nIterations; i++){
+		learnDict.iterate((originalPatches.row(i)).data);
+	}
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
 	cv::Mat distortedPatches = generate2DPatches(distortedImageGrayFloat, patchHeight, patchWidth);
@@ -82,10 +93,29 @@ int main(int argc, char ** argv){
 		distortedPatches.col(i) -= distortedPatchesMean.at<float>(i);
 	}
 
-	
+	// python portions:
+	//code = dico.transform(distortedPatches);
+	cv::Mat code = learnDict.sparse_coding();
 
+	cv::Mat reconstructedPatches = dot(code, learnedDictionary);
+	for(int i = 0; i < reconstructedPatches.cols; i++){
+		reconstructedPatches.col(i) += distortedPatchesMean.at<float>(i);
+	}
 
+	cv::Mat reconstructedImage = reconstructImgFromPatches(reconstructedPatches, patchHeight, patchWidth, distortedImageGrayFloat.rows, distortedImageGrayFloat.cols);
 
+	// display three windows to visualize results:
+	cv::namedWindow("Original Image", cv::CV_WINDOW_AUTOSIZE );
+	cv::namedWindow("Distorted Image", cv::CV_WINDOW_AUTOSIZE );
+	cv::namedWindow("Reconstructed Image", cv::CV_WINDOW_AUTOSIZE );
+
+	cv::imshow("Original Image", originalImageGrayFloat);
+	cv::imshow("Distorted Image", distortedImageGrayFloat);
+	cv::imshow("Reconstructed Image", reconstructedImageGrayFloat);
+
+	cv::waitKey(0);
+
+	return 0;
 }
 
 
@@ -97,7 +127,7 @@ implementation follows following structure:
 rows of Mat_<double> represent individual patches
 https://github.com/scikit-learn/scikit-learn/blob/14031f6/sklearn/feature_extraction/image.py#L393
 */
-cv::Mat_<float> reconstructFromPatches(cv::Mat_<float> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth){
+cv::Mat_<float> reconstructImgFromPatches(cv::Mat_<float> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth){
 	//int nPatches = data.rows;
 	int nPatchesAlongHorizontal = imageWidth - patchWidth + 1;
 	int nPatchesAlongVertical = imageHeight - patchHeight + 1;
