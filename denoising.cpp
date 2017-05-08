@@ -3,8 +3,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp"
-#include "util.h"
-#include "OnlineDictionaryLearning.h"
+#include "src/OnlineDictionaryLearning.h"
 
 cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth);
 cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth);
