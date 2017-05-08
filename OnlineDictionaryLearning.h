@@ -2,7 +2,7 @@
 #include "lars.h"
 struct DictionaryLearning {
   const int m, k;
-  const Real *Dt; // kxm, transpose of D
+  const Real *Dt; // kxm, transpose of D(mxk)
   const Real *A;  // kxk
   const Real *B;  // mxk
   const Real *tmp; // m-vector
@@ -62,7 +62,7 @@ void DictionaryLearning::sparse_coding(Real *x, Real *alpha) {
 }
 
 void DictionaryLearning::sparse_coding(Real *x) {
-  //TODO upadte y with x in Lars
+  lars_ptr->init(x); //reset temporary data in Lars, and set Lars.y to x
   lars_ptr->solve();
 }
 
@@ -76,5 +76,5 @@ void DictionaryLearning::iterate(Real *x) { // run line 4-7 of algorithm 1
       A[alpha[j].id * k + alpha[i].id] += alpha[i].v * alpha[j].v;
     for (int j = 0; j < m; j++)
       B[j * k + alpha[i].id] += x[j] * alpha[i].v;
-  update_dict()
+  update_dict();
 }
