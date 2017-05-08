@@ -49,35 +49,40 @@ int main(int argc, char ** argv){
 	//python script does downsampling, but we do not need to. We do it manually using softwares.
 
 	// extract patches from distortedImage
-	cv::Mat_<float> patches = generate2DPatches(originalImageGrayFloat, patchHeight, patchWidth);
+	cv::Mat_<float> originalPatches = generate2DPatches(originalImageGrayFloat, patchHeight, patchWidth);
 
-	// normalize : around mean with std. 1
+	// normalize along columns: with mean 0 and std. 1 for each column.
 	cv::Mat originalPatchesMean;
 	cv::Mat originalPatchesStd;
-	for(int i = 0; i < patches.cols, ){
-		
+	for(int i = 0; i < originalPatches.cols, i ++){
+		cv::meanStdDev(patches.col(i), originalPatchesMean, originalPatchesStd);
+		originalPatches.col(i) -= originalPatchesMean.at<float>(0);
+		originalPatches.col(i) /= originalPatchesStd.at<float>(0);
 	}
 
-	dim = 0, op = CV_REDUCE
+	// dictionary learning part
+	// TODO: needs to be completed: learn a dictionary
+	dictLearningOnline(double * X, int n_features, int n_samples, int n_components, double alpha);
 
 
+	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
+	cv::Mat distortedPatches = generate2DPatches(distortedImageGrayFloat, patchHeight, patchWidth);
+	cv::Mat distortedPatchesMean;
+	cv::Mat distortedPatchesStd;
+	for(int i = 0; i < distortedPatches.cols, i ++){
+		cv::Mat distortedPatchesColumnwiseMean;
+		cv::Mat distortedPatchesColumnwiseStd;
+		cv::meanStdDev(patches.col(i), distortedPatchesColumnwiseMean, distortedPatchesColumnwiseStd);
+		distortedPatchesMean.at<float>(i) = distortedPatchesColumnwiseMean.at<float>(0);
+		distortedPatchesStd.at<float>(i) = distortedPatchesColumnwiseStd.at<float>(0);
+	}
 
-	/*
-	// normalize
-	cv::Mat mean;
-	cv::Mat stdDev;
-	cv::meanStdDev(img_float, mean, stdDev);
-	//img_float -= mean[0];
-	//img_float /=stdDev[0];
-	*/
+	// substract mean
+	for(int i = 0; i < distortedPatches.cols; i++){
+		distortedPatches.col(i) -= distortedPatchesMean.at<float>(i);
+	}
 
-
-	uchar * data = img_gray.data;
-	int n_rows = img_gray.rows;
-	int n_cols = img_gray.cols;
-
-	// generate patches
-
+	
 
 
 
