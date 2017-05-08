@@ -6,38 +6,27 @@
 #define DICTIONARY_LEARNING_CPP
 
 DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in) :
-m(m_in), k(k_in) {
-  Dt = (Real*) malloc(m * k * sizeof(Real));
-  A = (Real*) malloc(k * k * sizeof(Real));
-  B = (Real*) malloc(m * k * sizeof(Real));
+m(m_in), k(k_in), epsilon(1e-4) {
+  Dt = (Real*) malloc(k * m * sizeof(Real)); // TODO Initailize Dt with independent cols
+  At = (Real*) malloc(k * k * sizeof(Real));
+  Bt = (Real*) malloc(k * m * sizeof(Real));
   tmp = (Real*) calloc(m, sizeof(Real));
-  lars_ptr = new Lars(Dt, m, k, lambda_in); //TODO refactor Lars for y
+  lars_ptr = new Lars(Dt, m, k, lambda_in);
 }
 
 void DictionaryLearning::update_dict() {
-  Real threshold = 1e-4;
   bool converge = false;
   while (!converge) {
     converge = true;
     for (int j = 0; j < k; j++) {
-      // b_j => B[][j];
-      for (int t = 0; t < m; t++) {
-        double da_j_t = 0.0;
-        // D[t][] * A[][j];
-        for (int tt = 0; tt < k; tt++) {
-          da_j_t += Dt[tt*k + t] * A[tt*k + j];
-        }
-        tmp[t] = (B[t*k + j] - da_j_t) / A[j*k + j] + Dt[j*k + t];
-      }
-
-      double base = 1.0 / fmax(l2Norm(tmp, m), 1.0);
-
-      for (int t = 0; t < m; t++) {
-        double temp = base * tmp[t];
-        if (fabs(temp - Dt[j*k + t]) > threshold)
-          converge = false;
-        Dt[j*k + t] = base * tmp[t];
-      }
+      amvm(At[j*k + j], Dt, true, At+j*k, tmp, k, m); //tmp = Daj
+      vecDiff(Bt+j*m, tmp, tmp, m);
+      axpy(-At[j*k + j], tmp, Dt+j*m, m);
+      Real norm = l2Norm(Dt+j*m, m);
+      if (norm > 1)
+        dot(1.0/norm, Dt+j*m, m);
+      if (l2Norm(tmp, m) >= epsilon * At[j*k + j])
+        converge = false;
     }
   }
 }
@@ -73,9 +62,9 @@ void DictionaryLearning::iterate(Real *const x) { // run line 4-7 of algorithm 1
   // A += alpha*alpha.T, B += x*alpha.T
   for (int i = 0; i < l; i++) {
     for (int j = 0; j < l; j++)
-      A[alpha[j].id * k + alpha[i].id] += alpha[i].v * alpha[j].v;
+      At[alpha[j].id * k + alpha[i].id] += alpha[i].v * alpha[j].v;
     for (int j = 0; j < m; j++)
-      B[j * k + alpha[i].id] += x[j] * alpha[i].v;
+      Bt[alpha[i].id * m + j] += x[j] * alpha[i].v;
   }
   update_dict();
 }

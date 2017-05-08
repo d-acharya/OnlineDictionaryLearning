@@ -7,13 +7,16 @@ int main() {
 
   // Initailize data
   int D = 5, K = 2;
-  Real *Xt = (Real*) malloc(D * K * sizeof(Real));
   Real *y = (Real*) malloc(D * sizeof(Real));
   Real *y_r = (Real*) malloc(D * sizeof(Real));
   Idx *beta;
   Real lambda = 0.1;
 
-  prepareData(D, K, 1, true, Xt, y);
+
+
+  DictionaryLearning dl(lambda, D, K);
+
+  prepareData(D, K, 1, true, dl.Dt, y);
 
   y[0] = 2;
   y[1] = 3;
@@ -21,7 +24,6 @@ int main() {
   y[3] = 2;
   y[4] = 2;
 
-  DictionaryLearning dl(lambda, D, K);
   dl.iterate(y);
 
   y[0] = 3;

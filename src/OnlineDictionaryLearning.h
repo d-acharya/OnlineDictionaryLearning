@@ -6,10 +6,11 @@
 struct DictionaryLearning {
   const int m, k;
   Real *Dt; // kxm, transpose of D(mxk)
-  Real *A;  // kxk
-  Real *B;  // mxk
+  Real *At;  // kxk
+  Real *Bt;  // mxk
   Real *tmp; // m-vector
   Lars *lars_ptr;
+  const Real epsilon;
 
   DictionaryLearning(Real lambda_in, int m_in, int k_in);
 
