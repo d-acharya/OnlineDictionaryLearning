@@ -1,27 +1,33 @@
-typedef double Real;
+#include "util.h"
+#include "lars.h"
 struct DictionaryLearning {
   const int m, k;
-  const Real *Dt; // transpose of D
-  const Real *A;
-  const Real *B;
-  const Real *tmp;
-  const Real *alpha; // to store the sparse coding of each x //TODO make it sparse vector
+  const Real *Dt; // kxm, transpose of D
+  const Real *A;  // kxk
+  const Real *B;  // mxk
+  const Real *tmp; // m-vector
+  Lars *lars_ptr;
   DictionaryLearning(Real lambda_in, Real *Dt_in, int m_in, int k_in);
-  // run line 4-7 of algorithm 1
-  void iterate(Real *x, int T=1000);
-
-  void sparse_coding(Real *x);
+  void iterate(Real *x);
+  void sparse_coding(Real *x); // for training
+  void sparse_coding(Real *x, Real *alpha); // for testing, return dense alpha
   void update_dict();
 }
+
 DictionaryLearning::DictionaryLearning(Real lambda_in, Real *D_in, int m_in, int k_in, int T_in) :
-Dt(Dt_in), m(m_in), k(k_in) {}
+Dt(Dt_in), m(m_in), k(k_in) {
+  Dt = (Real*) malloc(m * k * sizeof(Real));
+  A = (Real*) malloc(k * k * sizeof(Real));
+  B = (Real*) malloc(m * k * sizeof(Real));
+  tmp = (Real*) calloc(m * sizeof(Real));
+  lars_ptr = new Lars(Dt, y, m, k, lambda_in); //TODO refactor Lars for y
+}
 
 void DictionaryLearning::update_dict() {
-  //double *tmp = (double*) malloc(sizeof(double) * m);
-  double threshold = 0.1;
-  bool converge = true; //TODO make it a function
-  while (converge) {
-    converge = false
+  Real threshold = 1e-4;
+  bool converge = false;
+  while (!converge) {
+    converge = true;
     for (int j = 0; j < k; j++) {
       // b_j => B[][j];
       for (int t = 0; t < m; t++) {
@@ -37,20 +43,38 @@ void DictionaryLearning::update_dict() {
 
       for (int t = 0; t < m; t++) {
         double temp = base * tmp[t];
-        if (fabs(temp - Dt[j*k + t]) > threshold) run = 1;
+        if (fabs(temp - Dt[j*k + t]) > threshold)
+          converge = false;
         Dt[j*k + t] = base * tmp[t];
       }
     }
   }
-  //free(tmp);
 }
 
 void DictionaryLearning::sparse_coding(Real *x, Real *alpha) {
-  //TODO use Lars
+  sparse_coding(x);
+  // cope the Lars.beta into a dense vector alpha
+  Idx *beta = lars_ptr->beta;
+  int l = lars_ptr->active_itr;
+  memset(alpha, 0, m * sizeof(Real));
+  for (int i = 0; i < l; i++)
+    alpha[beta[i].id] = beta[i].v;
 }
 
-void DictionaryLearning::iterate(Real *x) {
-  sparse_coding(Real *x);
-  //TODO update A & B, line 5 & 6 of algorithm 1
+void DictionaryLearning::sparse_coding(Real *x) {
+  //TODO upadte y with x in Lars
+  lars_ptr->solve();
+}
+
+void DictionaryLearning::iterate(Real *x) { // run line 4-7 of algorithm 1
+  sparse_coding(x);
+  Idx *alpha = lars_ptr->beta;
+  int l = lars_ptr->active_itr;
+  // A += alpha*alpha.T, B += x*alpha.T
+  for (int i = 0; i < l; i++)
+    for (int j = 0; j < l; j++)
+      A[alpha[j].id * k + alpha[i].id] += alpha[i].v * alpha[j].v;
+    for (int j = 0; j < m; j++)
+      B[j * k + alpha[i].id] += x[j] * alpha[i].v;
   update_dict()
 }
