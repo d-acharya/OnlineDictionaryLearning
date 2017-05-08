@@ -24,3 +24,8 @@
 * pseudo code line 4, page 487, http://statweb.stanford.edu/~tibs/ftp/lars.pdf
   * how to find A1?
 * matrix inversion function http://www.sanfoundry.com/cpp-program-implement-gauss-jordan-elimination/
+
+
+#### **Usage for denoising**
+* After compilation, to test denoising.cpp:
+  * ./applicationName Lenna256.png Lenna256Noisy.png
