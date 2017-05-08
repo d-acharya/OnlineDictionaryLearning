@@ -1,6 +1,6 @@
 # Fast Implementation of Online Dictionary Learning for Sparse Coding
 
-
+git clone --recursive https://github.com/d-acharya/OnlineDictionaryLearning.git
 ### Existing Implementations
 **C++ Implementation**
 [SPAM Webpage](http://spams-devel.gforge.inria.fr/downloads.html)
