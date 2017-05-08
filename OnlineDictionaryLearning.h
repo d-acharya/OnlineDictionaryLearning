@@ -2,15 +2,15 @@
 #include "lars.h"
 struct DictionaryLearning {
   const int m, k;
-  const Real *Dt; // kxm, transpose of D(mxk)
-  const Real *A;  // kxk
-  const Real *B;  // mxk
-  const Real *tmp; // m-vector
+  Real *Dt; // kxm, transpose of D(mxk)
+  Real *A;  // kxk
+  Real *B;  // mxk
+  Real *tmp; // m-vector
   Lars *lars_ptr;
   DictionaryLearning(Real lambda_in, int m_in, int k_in);
-  void iterate(Real *x);
-  void sparse_coding(Real *x); // for training
-  void sparse_coding(Real *x, Real *alpha); // for testing, return dense alpha
+  void iterate(Real *const x);
+  void sparse_coding(Real *const x); // for training
+  void sparse_coding(Real *const x, Real *const alpha); // for testing, return dense alpha
   void update_dict();
 }
 
@@ -51,7 +51,7 @@ void DictionaryLearning::update_dict() {
   }
 }
 
-void DictionaryLearning::sparse_coding(Real *x, Real *alpha) {
+void DictionaryLearning::sparse_coding(Real *const x, Real *const alpha) {
   sparse_coding(x);
   // cope the Lars.beta into a dense vector alpha
   Idx *beta = lars_ptr->beta;
@@ -61,12 +61,12 @@ void DictionaryLearning::sparse_coding(Real *x, Real *alpha) {
     alpha[beta[i].id] = beta[i].v;
 }
 
-void DictionaryLearning::sparse_coding(Real *x) {
+void DictionaryLearning::sparse_coding(Real *const x) {
   lars_ptr->init(x); //reset temporary data in Lars, and set Lars.y to x
   lars_ptr->solve();
 }
 
-void DictionaryLearning::iterate(Real *x) { // run line 4-7 of algorithm 1
+void DictionaryLearning::iterate(Real *const x) { // run line 4-7 of algorithm 1
   sparse_coding(x);
   Idx *alpha = lars_ptr->beta;
   int l = lars_ptr->active_itr;
