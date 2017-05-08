@@ -3,8 +3,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp"
-#include "util.h"
-#include "OnlineDictionaryLearning.h"
+#include "src/OnlineDictionaryLearning.h"
 
 cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth);
 cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth);
@@ -72,7 +71,7 @@ int main(int argc, char ** argv){
 	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents);
 
 	for(int i = 0; i < nIterations; i++){
-		learnDict.iterate((float*)(originalPatches.row(i)).data);
+		learnDict.iterate((Real*)(originalPatches.row(i)).data);
 	}
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
