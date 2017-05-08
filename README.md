@@ -5,6 +5,11 @@ To clone the project and all submodules:
 ```bash
 git clone --recursive https://github.com/d-acharya/OnlineDictionaryLearning.git
 ```
+To update all submodules:
+```bash
+git submodule foreach git pull origin master
+```
+
 Existing Implementations
 ------------
 **C++ Implementation**
