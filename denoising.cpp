@@ -1,20 +1,23 @@
-// C++ file
 
 
-
-/*
-arg0 is iamge filename
-more args can be added later
-*/
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp"
 #include "util.h"
+#include "OnlineDictionaryLearning.h"
 
 cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth);
 cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth);
 
 int main(int argc, char ** argv){
+
+	if(argc < 2){
+		std::cout << "Usage: ./applicationName originalImage.png distortedImage.png!" << std::endl;
+		return -1;
+	}
+
+	const char* originalImagePath = argv[0];
+	const char* distortedImagePath = argv[1];
 
 	// constants used for computations
 	// define patchHeight and patchWidth
@@ -26,14 +29,6 @@ int main(int argc, char ** argv){
 	int nIterations = 2000;
 	Real regularizationParameter = 0.1;
 	int transformNNonZeroCoef = 5;
-
-	if(argc < 2){
-		std::cout << "Usage: ./test imageToLearnDictionary imageToDenoise." << std::endl;
-		return -1;
-	}
-
-	const char* originalImagePath = argv[0];
-	const char* distortedImagePath = argv[1];
 
 	// convert to gray scale
 	cv::Mat originalImageGray = cv::imread(originalImagePath, cv::IMREAD_GRAYSCALE);
@@ -51,8 +46,9 @@ int main(int argc, char ** argv){
 
 	cv::Mat originalImageGrayFloat;
 	cv::Mat distortedImageGrayFloat;
-	originalImage.convertTo(originalImageGrayFloat, cv::CV_32F);
-	distortedImage.convertTo(distortedImageGrayFloat, cv::CV_32F);
+	// TODO: CHECK TYPE: if Real is double, this needs correction to CV_64F.
+	originalImageGray.convertTo(originalImageGrayFloat, cv::CV_32F);
+	distortedImageGray.convertTo(distortedImageGrayFloat, cv::CV_32F);
 
 	//python script does downsampling, but we do not need to. We do it manually using softwares.
 
@@ -76,7 +72,7 @@ int main(int argc, char ** argv){
 	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents);
 
 	for(int i = 0; i < nIterations; i++){
-		learnDict.iterate((originalPatches.row(i)).data);
+		learnDict.iterate((float*)(originalPatches.row(i)).data);
 	}
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
@@ -96,17 +92,13 @@ int main(int argc, char ** argv){
 		distortedPatches.col(i) -= distortedPatchesMean.at<Real>(i);
 	}
 
-	// if learn each patch of damaged image
-	/*
-		for(int i = 0; i / ; i++){
-	
-		}
-	*/
 
+	// reconstruct each patch of damaged image
+	cv::Mat_<Real> reconstructedPatches(distortedPatches.rows, distortedPatches.cols);
+	for(int i = 0; i < reconstructedPatches.rows; i++){
+		learnDict.recover((Real*)(distortedPatches.row(i)).data, (Real*)(reconstructedPatches.row(i)).data);
+	}
 
-	
-	cv::Mat code = learnDict.sparse_coding(); //
-	//cv::Mat reconstructedPatches = dot(code, learnedDictionary);
 	for(int i = 0; i < reconstructedPatches.cols; i++){
 		reconstructedPatches.col(i) += distortedPatchesMean.at<Real>(i);
 	}
