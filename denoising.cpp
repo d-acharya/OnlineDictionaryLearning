@@ -71,7 +71,7 @@ int main(int argc, char ** argv){
 	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents);
 
 	for(int i = 0; i < nIterations; i++){
-		learnDict.iterate((float*)(originalPatches.row(i)).data);
+		learnDict.iterate((Real*)(originalPatches.row(i)).data);
 	}
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
