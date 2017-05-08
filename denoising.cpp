@@ -25,6 +25,7 @@ int main(int argc, char ** argv){
 	int lengthOfComponent = patchHeight*patchWidth;
 	int nIterations = 2000;
 	Real regularizationParameter = 0.1;
+	int transformNNonZeroCoef = 5;
 
 	if(argc < 2){
 		std::cout << "Usage: ./test imageToLearnDictionary imageToDenoise." << std::endl;
@@ -95,9 +96,16 @@ int main(int argc, char ** argv){
 		distortedPatches.col(i) -= distortedPatchesMean.at<Real>(i);
 	}
 
-	// python portions:
-	//code = dico.transform(distortedPatches);
-	cv::Mat code = learnDict.sparse_coding();
+	// if learn each patch of damaged image
+	/*
+		for(int i = 0; i / ; i++){
+	
+		}
+	*/
+
+
+	
+	cv::Mat code = learnDict.sparse_coding(); //
 	//cv::Mat reconstructedPatches = dot(code, learnedDictionary);
 	for(int i = 0; i < reconstructedPatches.cols; i++){
 		reconstructedPatches.col(i) += distortedPatchesMean.at<Real>(i);
