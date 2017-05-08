@@ -1,0 +1,3 @@
+[submodule "src/lars_light"]
+	path = src/lars_light
+	url = https://github.com/paramoecium/lars_light.git
