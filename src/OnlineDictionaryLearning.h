@@ -16,6 +16,6 @@ struct DictionaryLearning {
   void sparse_coding(Real *const x, Real *const alpha); // for testing, return dense alpha
   void recover(Real *const x, Real*const x_r);
   void update_dict();
-}
+};
 
 #endif
