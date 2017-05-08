@@ -7,14 +7,14 @@ struct DictionaryLearning {
   const Real *B;  // mxk
   const Real *tmp; // m-vector
   Lars *lars_ptr;
-  DictionaryLearning(Real lambda_in, Real *Dt_in, int m_in, int k_in);
+  DictionaryLearning(Real lambda_in, int m_in, int k_in);
   void iterate(Real *x);
   void sparse_coding(Real *x); // for training
   void sparse_coding(Real *x, Real *alpha); // for testing, return dense alpha
   void update_dict();
 }
 
-DictionaryLearning::DictionaryLearning(Real lambda_in, Real *D_in, int m_in, int k_in, int T_in) :
+DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in) :
 Dt(Dt_in), m(m_in), k(k_in) {
   Dt = (Real*) malloc(m * k * sizeof(Real));
   A = (Real*) malloc(k * k * sizeof(Real));
