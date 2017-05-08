@@ -1,4 +1,5 @@
 #include "mathOperations.h"
+#include "mkl.h"
 
 double larsCost(double * D, double * x, double * a, int cols, int rows, double lambda);
 double updateCost(D, A, B, rows, cols);

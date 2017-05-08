@@ -1,3 +1,4 @@
+#include "utilities.h"
 /*
 	Computes cost to be used for LARS in step 4 of Algorithm 1.
 	D : rows x cols matrix
