@@ -7,7 +7,8 @@
 
 DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in) :
 m(m_in), k(k_in), epsilon(1e-2), T(1) {
-  Dt = (Real*) malloc(k * m * sizeof(Real)); // TODO Initailize Dt with independent cols
+  Dt = (Real*) calloc(k * m, sizeof(Real));
+  prepare_Xt(m, k, true, Dt); // Initailize Dt with random normalized cols
   At = (Real*) malloc(k * k * sizeof(Real));
   Bt = (Real*) malloc(k * m * sizeof(Real));
   tmp = (Real*) calloc(m, sizeof(Real));
