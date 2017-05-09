@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ODLForSparseCoding)
 
-#find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/src)

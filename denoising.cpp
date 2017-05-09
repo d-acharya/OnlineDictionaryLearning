@@ -46,8 +46,8 @@ int main(int argc, char ** argv){
 	cv::Mat originalImageGrayFloat;
 	cv::Mat distortedImageGrayFloat;
 	// TODO: CHECK TYPE: if Real is double, this needs correction to CV_64F.
-	originalImageGray.convertTo(originalImageGrayFloat, cv::CV_32F);
-	distortedImageGray.convertTo(distortedImageGrayFloat, cv::CV_32F);
+	originalImageGray.convertTo(originalImageGrayFloat, CV_32F);
+	distortedImageGray.convertTo(distortedImageGrayFloat, CV_32F);
 
 	//python script does downsampling, but we do not need to. We do it manually using softwares.
 
@@ -57,8 +57,8 @@ int main(int argc, char ** argv){
 	// normalize along columns: with mean 0 and std. 1 for each column.
 	cv::Mat originalPatchesMean;
 	cv::Mat originalPatchesStd;
-	for(int i = 0; i < originalPatches.cols, i ++){
-		cv::meanStdDev(patches.col(i), originalPatchesMean, originalPatchesStd);
+	for(int i = 0; i < originalPatches.cols; i ++){
+		cv::meanStdDev(originalPatches.col(i), originalPatchesMean, originalPatchesStd);
 		originalPatches.col(i) -= originalPatchesMean.at<Real>(0);
 		originalPatches.col(i) /= originalPatchesStd.at<Real>(0);
 	}
@@ -78,10 +78,10 @@ int main(int argc, char ** argv){
 	cv::Mat distortedPatches = generate2DPatches(distortedImageGrayFloat, patchHeight, patchWidth);
 	cv::Mat distortedPatchesMean;
 	cv::Mat distortedPatchesStd;
-	for(int i = 0; i < distortedPatches.cols, i ++){
+	for(int i = 0; i < distortedPatches.cols; i ++){
 		cv::Mat distortedPatchesColumnwiseMean;
 		cv::Mat distortedPatchesColumnwiseStd;
-		cv::meanStdDev(patches.col(i), distortedPatchesColumnwiseMean, distortedPatchesColumnwiseStd);
+		cv::meanStdDev(originalPatches.col(i), distortedPatchesColumnwiseMean, distortedPatchesColumnwiseStd);
 		distortedPatchesMean.at<Real>(i) = distortedPatchesColumnwiseMean.at<Real>(0);
 		distortedPatchesStd.at<Real>(i) = distortedPatchesColumnwiseStd.at<Real>(0);
 	}
@@ -102,12 +102,12 @@ int main(int argc, char ** argv){
 		reconstructedPatches.col(i) += distortedPatchesMean.at<Real>(i);
 	}
 
-	cv::Mat reconstructedImage = reconstructImgFromPatches(reconstructedPatches, patchHeight, patchWidth, distortedImageGrayFloat.rows, distortedImageGrayFloat.cols);
+	cv::Mat reconstructedImageGrayFloat = reconstructImgFromPatches(reconstructedPatches, patchHeight, patchWidth, distortedImageGrayFloat.rows, distortedImageGrayFloat.cols);
 
 	// display three windows to visualize results:
-	cv::namedWindow("Original Image", cv::CV_WINDOW_AUTOSIZE );
-	cv::namedWindow("Distorted Image", cv::CV_WINDOW_AUTOSIZE );
-	cv::namedWindow("Reconstructed Image", cv::CV_WINDOW_AUTOSIZE );
+	cv::namedWindow("Original Image", CV_WINDOW_AUTOSIZE );
+	cv::namedWindow("Distorted Image", CV_WINDOW_AUTOSIZE );
+	cv::namedWindow("Reconstructed Image", CV_WINDOW_AUTOSIZE );
 
 	cv::imshow("Original Image", originalImageGrayFloat);
 	cv::imshow("Distorted Image", distortedImageGrayFloat);
@@ -129,8 +129,8 @@ https://github.com/scikit-learn/scikit-learn/blob/14031f6/sklearn/feature_extrac
 */
 cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth){
 	//int nPatches = data.rows;
-	int nPatchesAlongHorizontal = imageWidth - patchWidth + 1;
-	int nPatchesAlongVertical = imageHeight - patchHeight + 1;
+	int nPatchesAlongHorizontal = imgWidth - patchWidth + 1;
+	int nPatchesAlongVertical = imgHeight - patchHeight + 1;
 
 	cv::Mat_<Real> img = cv::Mat_<Real>::zeros(imgHeight, imgWidth);
 
@@ -145,9 +145,9 @@ cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, i
 	}
 
 	// average out over patches
-	for(int i =0; i < imageHeight; i++){
-		for(int j = 0; j < imageWidth; j++){
-			img.at<Real>(i,j) /= (Real)(std::min({i+1, patchHeight, imageHeight-1})* std::min({j+1, patchWidth, imageWidth-1}));
+	for(int i =0; i < imgHeight; i++){
+		for(int j = 0; j < imgWidth; j++){
+			img.at<Real>(i,j) /= (Real)(std::min(i+1, std::min(patchHeight, imgHeight-1))* std::min(j+1, std::min(patchWidth, imgWidth-1)));
 		}
 	}
 
