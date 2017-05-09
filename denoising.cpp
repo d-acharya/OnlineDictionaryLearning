@@ -1,22 +1,24 @@
 
 
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/opencv.hpp"
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 #include "src/OnlineDictionaryLearning.h"
+#include <iostream>
 
 cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth);
 cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth);
 
-int main(int argc, char ** argv){
+int main(int argc, char** argv){
 
-	if(argc < 2){
+	if(argc != 3){
 		std::cout << "Usage: ./applicationName originalImage.png distortedImage.png!" << std::endl;
 		return -1;
 	}
 
-	const char* originalImagePath = argv[0];
-	const char* distortedImagePath = argv[1];
+	const char* originalImagePath = argv[1];
+	const char* distortedImagePath = argv[2];
 
 	// constants used for computations
 	int patchHeight = 3;
@@ -28,25 +30,22 @@ int main(int argc, char ** argv){
 	Real regularizationParameter = 0.1;
 	int transformNNonZeroCoef = 5;
 
-	// convert to gray scale
-	cv::Mat originalImageGray = cv::imread(originalImagePath, cv::IMREAD_GRAYSCALE);
-	cv::Mat distortedImageGray = cv::imread(distortedImagePath, cv::IMREAD_GRAYSCALE);
-
-	/*
-	//make sure number of channels is one
-	cv::Mat img_gray;
-	if(img.channels()!=1){
-		cv::cvtColor(img, img_gray, cv::COLOR_BGR2GRAY);
-	} else {
-		img_gray = img;
+	// read single channel of images
+	cv::Mat originalImageGray, distortedImageGray; 
+	originalImageGray = cv::imread(argv[1], 0);
+	distortedImageGray = cv::imread(argv[2], 0);
+	if(!originalImageGray.data || !distortedImageGray.data){
+		std::cout<<"Image could not be read."<<std::endl;
+		return -1;	
 	}
-	*/
 
-	cv::Mat originalImageGrayFloat;
-	cv::Mat distortedImageGrayFloat;
+	cv::Mat_<Real> originalImageGrayFloat;
+	cv::Mat_<Real> distortedImageGrayFloat;
 
-	originalImageGray.convertTo(originalImageGrayFloat, CV_32F);
-	distortedImageGray.convertTo(distortedImageGrayFloat, CV_32F);
+	originalImageGray.convertTo(originalImageGrayFloat, CV_32F, 1.0/255.0);
+	distortedImageGray.convertTo(distortedImageGrayFloat, CV_32F, 1.0/255.0);
+
+
 
 	// extract patches from original image
 	std::cout<<"Extracting patches from original image... "<<std::endl;
@@ -72,7 +71,7 @@ int main(int argc, char ** argv){
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
 	std::cout<<"Extracting patches from noisy image... "<<std::endl;
-	cv::Mat distortedPatches = generate2DPatches(distortedImageGrayFloat, patchHeight, patchWidth);
+	cv::Mat_<Real> distortedPatches = generate2DPatches(distortedImageGrayFloat, patchHeight, patchWidth);
 	std::cout<<"Extracting patches from noisy image completed."<<std::endl;
 	cv::Mat distortedPatchesMean;
 	cv::Mat distortedPatchesStd;
@@ -166,11 +165,13 @@ cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, i
 
 */
 
-cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth){	int nPatchesAlongHorizontal = img.rows - patchWidth + 1;
+cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth){	
+	int nPatchesAlongHorizontal = img.rows - patchWidth + 1;
 	int nPatchesAlongVertical = img.cols - patchHeight + 1;
 	cv::Mat_<Real> data = cv::Mat_<Real>::zeros(nPatchesAlongVertical*nPatchesAlongVertical, patchHeight*patchWidth);
 	for(int i = 0; i < nPatchesAlongHorizontal; i++){
 		for(int j = 0; j < nPatchesAlongVertical; j++){
+			std::cout<<"patches:"<<i<<" "<<j<<std::endl;
 			cv::Mat_<Real> tmp = img(cv::Rect_<Real>(nPatchesAlongHorizontal,nPatchesAlongVertical, patchWidth, patchHeight));
 			// flatten patch to a single row
 			tmp.reshape(1, 1);
