@@ -5,6 +5,7 @@
 #define DICTIONARY_LEARNING_H
 struct DictionaryLearning {
   const int m, k;
+  const int T; // # iteration of dictionary update
   Real *Dt; // kxm, transpose of D(mxk)
   Real *At;  // kxk
   Real *Bt;  // mxk
