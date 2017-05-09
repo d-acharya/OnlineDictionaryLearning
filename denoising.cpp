@@ -19,9 +19,8 @@ int main(int argc, char ** argv){
 	const char* distortedImagePath = argv[1];
 
 	// constants used for computations
-	// define patchHeight and patchWidth
-	int patchHeight = 5;
-	int patchWidth = 5;
+	int patchHeight = 3;
+	int patchWidth = 3;
 	int nComponents = 100;
 	// lengthOfComponent is lengthOfPatch
 	int lengthOfComponent = patchHeight*patchWidth;
@@ -34,7 +33,7 @@ int main(int argc, char ** argv){
 	cv::Mat distortedImageGray = cv::imread(distortedImagePath, cv::IMREAD_GRAYSCALE);
 
 	/*
-	// make sure number of channels is one
+	//make sure number of channels is one
 	cv::Mat img_gray;
 	if(img.channels()!=1){
 		cv::cvtColor(img, img_gray, cv::COLOR_BGR2GRAY);
@@ -45,14 +44,14 @@ int main(int argc, char ** argv){
 
 	cv::Mat originalImageGrayFloat;
 	cv::Mat distortedImageGrayFloat;
-	// TODO: CHECK TYPE: if Real is double, this needs correction to CV_64F.
+
 	originalImageGray.convertTo(originalImageGrayFloat, CV_32F);
 	distortedImageGray.convertTo(distortedImageGrayFloat, CV_32F);
 
-	//python script does downsampling, but we do not need to. We do it manually using softwares.
-
-	// extract patches from distortedImage
+	// extract patches from original image
+	std::cout<<"Extracting patches from original image... "<<std::endl;
 	cv::Mat_<Real> originalPatches = generate2DPatches(originalImageGrayFloat, patchHeight, patchWidth);
+	std::cout<<"Extracting patches from original image completed. "<<std::endl;
 
 	// normalize along columns: with mean 0 and std. 1 for each column.
 	cv::Mat originalPatchesMean;
@@ -64,18 +63,17 @@ int main(int argc, char ** argv){
 	}
 
 	// dictionary learning part
-	// TODO: needs to be completed: learn a dictionary
-	// TODO: dictLearningOnline(double * X, int n_features, int n_samples, int n_components, double alpha);
-	//cv::Mat_<Real> initialDictionary(nComponents, lengthOfComponent);
-	//cv::randn(initialDictionary, 0.0, 1.0);
+	std::cout<<"Learning dictionary from original image..."<<std::endl;
 	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents);
-
 	for(int i = 0; i < nIterations; i++){
-		learnDict.iterate((Real*)(originalPatches.row(i)).data);
+		learnDict.iterate((Real*)(originalPatches.row(i%originalPatches.rows)).data);
 	}
+	std::cout<<"Learning dictionary from original image completed."<<std::endl;
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
+	std::cout<<"Extracting patches from noisy image... "<<std::endl;
 	cv::Mat distortedPatches = generate2DPatches(distortedImageGrayFloat, patchHeight, patchWidth);
+	std::cout<<"Extracting patches from noisy image completed."<<std::endl;
 	cv::Mat distortedPatchesMean;
 	cv::Mat distortedPatchesStd;
 	for(int i = 0; i < distortedPatches.cols; i ++){
@@ -93,16 +91,20 @@ int main(int argc, char ** argv){
 
 
 	// reconstruct each patch of damaged image
+	std::cout<<"Reconstructing noisy image patches using dictionary learned from original image..."<<std::endl;
 	cv::Mat_<Real> reconstructedPatches(distortedPatches.rows, distortedPatches.cols);
 	for(int i = 0; i < reconstructedPatches.rows; i++){
 		learnDict.recover((Real*)(distortedPatches.row(i)).data, (Real*)(reconstructedPatches.row(i)).data);
 	}
+	std::cout<<"Reconstructing noisy image patches using dictionary learned from original image completed."<<std::endl;
 
 	for(int i = 0; i < reconstructedPatches.cols; i++){
 		reconstructedPatches.col(i) += distortedPatchesMean.at<Real>(i);
 	}
-
+	
+	std::cout<<"Constructing image from learned patches ..."<<std::endl;
 	cv::Mat reconstructedImageGrayFloat = reconstructImgFromPatches(reconstructedPatches, patchHeight, patchWidth, distortedImageGrayFloat.rows, distortedImageGrayFloat.cols);
+	std::cout<<"Constructing image from learned patches completed."<<std::endl;
 
 	// display three windows to visualize results:
 	cv::namedWindow("Original Image", CV_WINDOW_AUTOSIZE );
@@ -134,7 +136,6 @@ cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, i
 
 	cv::Mat_<Real> img = cv::Mat_<Real>::zeros(imgHeight, imgWidth);
 
-	// this implementation may be different from scikit-learn
 	for(int i = 0; i < data.rows; i++){
 		cv::Mat_<Real> row_;
 		(data.row(i)).copyTo(row_);
@@ -161,12 +162,11 @@ cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, i
 	patchHeight and patchWidth indicate height and width of the patch
 	extracts patches from image and returns a matrix whose rows
 	represent the flattened patches of the image.
+	//https://github.com/scikit-learn/scikit-learn/blob/14031f6/sklearn/feature_extraction/image.py#L300
 
 */
 
-cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth){
-	//https://github.com/scikit-learn/scikit-learn/blob/14031f6/sklearn/feature_extraction/image.py#L300
-	int nPatchesAlongHorizontal = img.rows - patchWidth + 1;
+cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth){	int nPatchesAlongHorizontal = img.rows - patchWidth + 1;
 	int nPatchesAlongVertical = img.cols - patchHeight + 1;
 	cv::Mat_<Real> data = cv::Mat_<Real>::zeros(nPatchesAlongVertical*nPatchesAlongVertical, patchHeight*patchWidth);
 	for(int i = 0; i < nPatchesAlongHorizontal; i++){
