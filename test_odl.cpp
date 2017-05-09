@@ -6,7 +6,7 @@
 int main() {
 
   // Initailize data
-  int D = 5, K = 2;
+  int D = 5, K = 3;
   Real *y = (Real*) malloc(D * sizeof(Real));
   Real *y_r = (Real*) malloc(D * sizeof(Real));
   Idx *beta;

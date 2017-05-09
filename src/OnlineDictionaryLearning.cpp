@@ -6,7 +6,7 @@
 #define DICTIONARY_LEARNING_CPP
 
 DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in) :
-m(m_in), k(k_in), epsilon(1e-4) {
+m(m_in), k(k_in), epsilon(1e-2) {
   Dt = (Real*) malloc(k * m * sizeof(Real)); // TODO Initailize Dt with independent cols
   At = (Real*) malloc(k * k * sizeof(Real));
   Bt = (Real*) malloc(k * m * sizeof(Real));
@@ -15,18 +15,23 @@ m(m_in), k(k_in), epsilon(1e-4) {
 }
 
 void DictionaryLearning::update_dict() {
+  print("update_dict()\n");
   bool converge = false;
   while (!converge) {
     converge = true;
     for (int j = 0; j < k; j++) {
-      amvm(At[j*k + j], Dt, true, At+j*k, tmp, k, m); //tmp = Daj
+      //print("%d", j);
+      mvm(Dt, true, At+j*k, tmp, k, m); //tmp = Daj
       vecDiff(Bt+j*m, tmp, tmp, m);
-      axpy(-At[j*k + j], tmp, Dt+j*m, m);
+      print("Ajj = %.3f\n", At[j*k + j]);
+      axpy(1.0/At[j*k + j], tmp, Dt+j*m, m);
       Real norm = l2Norm(Dt+j*m, m);
+      print("norm(dj) = %.3f\n", norm);
       if (norm > 1)
         dot(1.0/norm, Dt+j*m, m);
-      if (l2Norm(tmp, m) >= epsilon * At[j*k + j])
+      if (l2Norm(tmp, m) >= epsilon * At[j*k + j]) {
         converge = false;
+      }
     }
   }
 }
@@ -51,6 +56,7 @@ void DictionaryLearning::recover(Real *const x, Real*const x_r) {
 }
 
 void DictionaryLearning::sparse_coding(Real *const x) {
+  print("sparse_coding()\n");
   lars_ptr->set_y(x); //reset temporary data in Lars, and set Lars.y to x
   lars_ptr->solve();
 }
