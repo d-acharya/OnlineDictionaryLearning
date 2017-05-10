@@ -21,13 +21,13 @@ int main(int argc, char** argv){
 	const char* distortedImagePath = argv[2];
 
 	// constants used for computations
-	int patchHeight = 5;
-	int patchWidth = 5;
-	int nComponents = 100;
+	int patchHeight = 3;
+	int patchWidth = 3;
+	int nComponents = 500;
 	// lengthOfComponent is lengthOfPatch
 	int lengthOfComponent = patchHeight*patchWidth;
-	int nIterations = 2000;
-	Real regularizationParameter = 0.1;
+	int nIterations = 10000;
+	Real regularizationParameter = 1.0;
 	int transformNNonZeroCoef = 5;
 
 	// read single channel of images
@@ -50,30 +50,44 @@ int main(int argc, char** argv){
 	cv::Mat_<Real> originalPatches = generate2DPatches(originalImageGrayFloat, patchHeight, patchWidth);
 	std::cout<<"Extracting patches from original image completed. "<<std::endl;
 
-
+	/*
+	//this part checks that the methods I implemented: generate2DPatches and reconstructImgFromPatches
 	cv::Mat rec;
 	rec = reconstructImgFromPatches(originalPatches, patchHeight, patchWidth, originalImageGrayFloat.rows, originalImageGrayFloat.cols);
+	cv::namedWindow("Visualize", CV_WINDOW_AUTOSIZE );
+	cv::imshow("Visualize",rec);
+	cv::waitKey(0);
+	*/
+
 	// normalize along columns: with mean 0 and std. 1 for each column.
+	cv::Mat originalPatchesColumnwiseMean;
+	cv::Mat originalPatchesColumnwiseStd;
 	cv::Mat originalPatchesMean;
 	cv::Mat originalPatchesStd;
+
 	for(int i = 0; i < originalPatches.cols; i ++){
 		cv::Mat col = originalPatches.col(i);
-		cv::meanStdDev(col, originalPatchesMean, originalPatchesStd);
-		originalPatches.col(i) -= (double)originalPatchesMean.at<Real>(0);
-		originalPatches.col(i) /= (double)originalPatchesStd.at<Real>(0);
+		cv::meanStdDev(col, originalPatchesColumnwiseMean, originalPatchesColumnwiseStd);
+		originalPatches.col(i) -= (Real)originalPatchesColumnwiseMean.at<Real>(0);
+		originalPatches.col(i) /= (Real)originalColumnwisePatchesStd.at<Real>(0);
+		originalPatchesMean.push_back((Real)originalPatchesColumnwiseMean.at<Real>(0))
+		originalPatchesStd.push_back((Real)originalPatchesColumnwiseStd.at<Real>(0))
 	}
 	// dictionary learning part
 	std::cout<<"Learning dictionary from original image..."<<std::endl;
 	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents);
+
 	for(int i = 0; i < nIterations; i++){
 		learnDict.iterate((Real*)(originalPatches.row(i%originalPatches.rows)).data);
 	}
+
 	std::cout<<"Learning dictionary from original image completed."<<std::endl;
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
 	std::cout<<"Extracting patches from noisy image... "<<std::endl;
 	cv::Mat_<Real> distortedPatches = generate2DPatches(distortedImageGrayFloat, patchHeight, patchWidth);
 	std::cout<<"Extracting patches from noisy image completed."<<std::endl;
+
 	std::cout<<"Normalizing noisy data image..."<<std::endl;
 	cv::Mat distortedPatchesMean;
 	cv::Mat distortedPatchesStd;
@@ -87,6 +101,7 @@ int main(int argc, char** argv){
 		distortedPatchesMean.push_back(distortedPatchesColumnwiseMean.at<Real>(0));
 		distortedPatchesStd.push_back(distortedPatchesColumnwiseStd.at<Real>(0));
 	}
+	
 	// substract mean
 	for(int i = 0; i < distortedPatches.cols; i++){
 		distortedPatches.col(i) -= distortedPatchesMean.at<Real>(i);
@@ -139,16 +154,13 @@ cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, i
 	int nPatchesAlongVertical = imgHeight - patchHeight + 1;
 
 	cv::Mat_<Real> img = cv::Mat_<Real>::zeros(imgHeight, imgWidth);
-	//std::cout<<"reconstruction part 1"<<std::endl;
-	//std::cout<<imgHeight<<" "<<imgWidth<<std::endl;
 	for(int i = 0; i < data.rows; i++){
-		//std::cout<<i<<std::endl;
 		cv::Mat row_;
 		(data.row(i)).copyTo(row_);
 		row_.reshape(1,patchHeight);
 		int idX = i % nPatchesAlongHorizontal;
 		int idY = i / nPatchesAlongHorizontal;
-		row_=row_.reshape(1,5);
+		row_=row_.reshape(1,patchHeight);
 		cv::Mat roi = (img(cv::Rect_<Real>(idX, idY, patchWidth, patchHeight))).clone();
 		roi += row_;
 		roi.copyTo(img(cv::Rect_<Real>(idX, idY, patchWidth, patchHeight)));
@@ -188,9 +200,6 @@ cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchW
 			}
 			tmp=tmp.reshape(0, 1);
 
-			// copy row to data matrix
-			//std::cout<<data.rows<<" "<<data.cols<<" "<<tmp.rows<<" "<<tmp.cols<<" "<<data.row(i*nPatchesAlongHorizontal + j)<<std::endl;
-			//std::cout<<tmp<<std::endl;
 			tmp.copyTo(data.row(i*nPatchesAlongHorizontal + j));
 		}
 
