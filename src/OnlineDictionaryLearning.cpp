@@ -5,6 +5,35 @@
 #ifndef DICTIONARY_LEARNING_CPP
 #define DICTIONARY_LEARNING_CPP
 
+inline Real normalRand(Real mean = Real(0), Real stdev = Real(1)) {
+  const double norm = 1.0/(RAND_MAX + 1.0);
+  double u = 1.0 - std::rand()*norm;
+  double v = rand()*norm;
+  double z = sqrt(-2.0*log(u))*cos(2.0*M_PI*v);
+  return Real(mean + stdev*z);
+}
+
+inline void prepare_Xt(int D, int K, bool normalize, Real * Dt){
+  for (int j = 0, k = 0; j < K; j++) {
+    Real sum = Real(0);
+    Real sum2 = Real(0);
+    for (int i=0; i<D; i++,k++) {
+      Real v = normalRand();
+      Dt[k] = v;
+      sum += v;
+      sum2 += v*v;
+    }
+    if (normalize) {
+      Real std = sqrt(sum2 - sum*sum/Real(D));
+      k -= D;
+      for (int i=0;i<D;i++,k++) {
+         Dt[k] = (Dt[k] - sum/Real(D))/std;
+      }
+    }
+  }
+}
+
+
 DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in) :
 m(m_in), k(k_in), epsilon(1e-2), T(5) {
   Dt = (Real*) calloc(k * m, sizeof(Real));
@@ -73,5 +102,7 @@ void DictionaryLearning::iterate(Real *const x) { // run line 4-7 of algorithm 1
   }
   update_dict();
 }
+
+
 
 #endif
