@@ -6,7 +6,7 @@
 #define DICTIONARY_LEARNING_CPP
 
 DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in) :
-m(m_in), k(k_in), epsilon(1e-2), T(1) {
+m(m_in), k(k_in), epsilon(1e-2), T(5) {
   Dt = (Real*) calloc(k * m, sizeof(Real));
   prepare_Xt(m, k, true, Dt); // Initailize Dt with random normalized cols
   At = (Real*) malloc(k * k * sizeof(Real));
@@ -30,8 +30,7 @@ void DictionaryLearning::update_dict() {
       axpy(1.0/At[j*k + j], tmp, Dt+j*m, m);
       Real norm = l2Norm(Dt+j*m, m);
       print("norm(dj) = %.3f\n", norm);
-      if (norm > 1)
-        dot(1.0/norm, Dt+j*m, m);
+      dot(1.0/norm, Dt+j*m, m);
     }
   }
 }
