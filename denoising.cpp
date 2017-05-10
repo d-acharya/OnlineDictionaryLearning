@@ -60,18 +60,21 @@ int main(int argc, char** argv){
 	*/
 
 	// normalize along columns: with mean 0 and std. 1 for each column.
-	cv::Mat originalPatchesColumnwiseMean;
-	cv::Mat originalPatchesColumnwiseStd;
 	cv::Mat originalPatchesMean;
 	cv::Mat originalPatchesStd;
 
 	for(int i = 0; i < originalPatches.cols; i ++){
+		cv::Mat originalPatchesColumnwiseMean;
+		cv::Mat originalPatchesColumnwiseStd;
+
 		cv::Mat col = originalPatches.col(i);
 		cv::meanStdDev(col, originalPatchesColumnwiseMean, originalPatchesColumnwiseStd);
+
 		originalPatches.col(i) -= (Real)originalPatchesColumnwiseMean.at<Real>(0);
-		originalPatches.col(i) /= (Real)originalColumnwisePatchesStd.at<Real>(0);
-		originalPatchesMean.push_back((Real)originalPatchesColumnwiseMean.at<Real>(0))
-		originalPatchesStd.push_back((Real)originalPatchesColumnwiseStd.at<Real>(0))
+		originalPatches.col(i) /= (Real)originalPatchesColumnwiseStd.at<Real>(0);
+
+		originalPatchesMean.push_back((Real)originalPatchesColumnwiseMean.at<Real>(0));
+		originalPatchesStd.push_back((Real)originalPatchesColumnwiseStd.at<Real>(0));
 	}
 	// dictionary learning part
 	std::cout<<"Learning dictionary from original image..."<<std::endl;
@@ -101,7 +104,7 @@ int main(int argc, char** argv){
 		distortedPatchesMean.push_back(distortedPatchesColumnwiseMean.at<Real>(0));
 		distortedPatchesStd.push_back(distortedPatchesColumnwiseStd.at<Real>(0));
 	}
-	
+
 	// substract mean
 	for(int i = 0; i < distortedPatches.cols; i++){
 		distortedPatches.col(i) -= distortedPatchesMean.at<Real>(i);
