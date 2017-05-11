@@ -9,7 +9,7 @@ To update all submodules:
 ```bash
 git submodule foreach git pull origin master
 ```
-Compile
+To compile:
 ```bash
 mkdir build
 cd build 
