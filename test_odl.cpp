@@ -12,7 +12,7 @@ using namespace std;
 int main() {
 
   // Initailize data
-  int D = 6, K = 12, r = 5000;
+  int D = 20, K = 40, r = 2000;
   Real *y = (Real*) malloc(D * r * sizeof(Real));
   Real *y_r = (Real*) malloc(D * sizeof(Real));
   Idx *beta;
@@ -31,13 +31,15 @@ int main() {
 
   Real error(0.0), min_error(1e10), max_error(0.0);
   int count;
-  for (int t = 0; t < 500; t++) {
-    error = 0.0, min_error = 1e10, max_error = 0.0;
-    count = 0;
-    for (int i = 0; i < r; i++) {
-    //for (int i = 0; i < 150; i++) {
+  for (int t = 0; t < 1000; t++) {
+    for (int i = 0; i < r/2; i++) {
       if (l2Norm(y+D*i, D) == 0) continue;
       dl.iterate(y+D*i);
+    }
+    error = 0.0, min_error = 1e10, max_error = 0.0;
+    count = 0;
+    for (int i = r/2; i < r; i++) {
+      if (l2Norm(y+D*i, D) == 0) continue;
       dl.recover(y+D*i, y_r);
       vecDiff(y+D*i, y_r, y_r, D);
       Real norm = l2Norm(y_r, D);
@@ -48,16 +50,18 @@ int main() {
     }
     error = sqrt(error);
     error /= count;
-    cout << "iteration " << t << ", MSE = " << error
+    cout << "iteration " << t << ", test mse = " << error
          << "(max=" << max_error << ", min=" << min_error << ")" << endl;
   }
+
   cout << " # non-zeros vector = " << count << endl;
   cout << "Learned Dictionary:" << endl;
   for (int i = 0; i < K; i++) {
+    cout << "[";
     for (int j = 0; j < D; j++) {
-      cout << dl.Dt[D*i + j] << " ";
+      cout << dl.Dt[D*i + j] << ", ";
     }
-    cout << endl;
+    cout << "]," << endl;
   }
   cout << endl;
 
@@ -72,8 +76,7 @@ int main() {
   myfile.close();
   error = 0.0, min_error = 1e10, max_error = 0.0;
   count = 0;
-  for (int i = 0; i < r; i++) {
-  //for (int i = 0; i < 150; i++) {
+  for (int i = r/2; i < r; i++) {
     if (l2Norm(y+D*i, D) == 0) continue;
     dl.recover(y+D*i, y_r);
     vecDiff(y+D*i, y_r, y_r, D);
@@ -92,8 +95,7 @@ int main() {
   prepare_Xt(D, K, true, dl.Dt);
   error = 0.0, min_error = 1e10, max_error = 0.0;
   count = 0;
-  for (int i = 0; i < r; i++) {
-  //for (int i = 0; i < 150; i++) {
+  for (int i = r/2; i < r; i++) {
     if (l2Norm(y+D*i, D) == 0) continue;
     dl.recover(y+D*i, y_r);
     vecDiff(y+D*i, y_r, y_r, D);
