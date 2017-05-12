@@ -9,6 +9,14 @@ To update all submodules:
 ```bash
 git submodule foreach git pull origin master
 ```
+To compile:
+```bash
+mkdir build
+cd build 
+cmake ..
+make
+./test_odl
+```
 
 Existing Implementations
 ------------
