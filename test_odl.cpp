@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "timer.h"
+#include "timer_id.h"
 #include "util.h"
 #include "OnlineDictionaryLearning.h"
 #include <fstream>
@@ -17,7 +19,8 @@ int main() {
   Real *y_r = (Real*) malloc(D * sizeof(Real));
   Idx *beta;
   Real lambda = 0.5;
-  DictionaryLearning dl(lambda, D, K);
+  Timer timer(END_ITR);
+  DictionaryLearning dl(lambda, D, K, timer);
 
   fstream myfile;
   cout << "open " << "../y_"+to_string(D)+"_"+to_string(r) << endl;
@@ -105,6 +108,7 @@ int main() {
     min_error = fmin(min_error, norm);
     max_error = fmax(max_error, norm);
   }
+  timer.print(1);
   error = sqrt(error);
   error /= count;
   cout << "the worst MSE possible = " << error;

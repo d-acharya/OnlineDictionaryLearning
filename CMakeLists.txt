@@ -3,6 +3,10 @@ project(ODLForSparseCoding)
 
 find_package(OpenCV REQUIRED)
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+	set(CMAKE_CXX_FLAGS "-O3 -mavx -mfma -m64")
+endif()
+
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/lib)

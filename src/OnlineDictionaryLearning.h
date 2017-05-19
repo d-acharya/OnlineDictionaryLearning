@@ -1,5 +1,6 @@
 #include "lars.h"
 #include "util.h"
+#include "timer.h"
 
 #ifndef DICTIONARY_LEARNING_H
 #define DICTIONARY_LEARNING_H
@@ -12,8 +13,9 @@ struct DictionaryLearning {
   Real *tmp; // m-vector
   Lars *lars_ptr;
   const Real epsilon;
+  Timer timer;
 
-  DictionaryLearning(Real lambda_in, int m_in, int k_in);
+  DictionaryLearning(Real lambda_in, int m_in, int k_in, Timer &timer);
 
   void update_dict();
   void sparse_coding(Real *const x); // for training

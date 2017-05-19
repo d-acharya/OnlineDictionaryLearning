@@ -9,6 +9,7 @@
 
 cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth);
 cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, int patchWidth, int imgHeight, int imgWidth);
+void visualizeDictionary(Real *Dt, int patchHeight, int patchWidth, int nComponents, int patchesAlongX);
 
 int main(int argc, char** argv){
 
@@ -21,12 +22,12 @@ int main(int argc, char** argv){
 	const char* distortedImagePath = argv[2];
 
 	// constants used for computations
-	int patchHeight = 3;
-	int patchWidth = 3;
-	int nComponents = 500;
+	int patchHeight = 10;
+	int patchWidth = 10;
+	int nComponents = 200;
 	// lengthOfComponent is lengthOfPatch
 	int lengthOfComponent = patchHeight*patchWidth;
-	int nIterations = 10000;
+	int nIterations = 2000;
 	Real regularizationParameter = 1.0;
 	int transformNNonZeroCoef = 5;
 
@@ -76,15 +77,28 @@ int main(int argc, char** argv){
 		originalPatchesMean.push_back((Real)originalPatchesColumnwiseMean.at<Real>(0));
 		originalPatchesStd.push_back((Real)originalPatchesColumnwiseStd.at<Real>(0));
 	}
+
+
+//	cv::namedWindow("Original Imag1e", CV_WINDOW_AUTOSIZE );
+//	cv::imshow("Original Imag1e", originalImageGrayFloat);
+//	cv::waitKey(0);
+
+
 	// dictionary learning part
 	std::cout<<"Learning dictionary from original image..."<<std::endl;
-	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents);
+	Timer timer(END_ITR);
+	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents, timer);
 
 	for(int i = 0; i < nIterations; i++){
 		learnDict.iterate((Real*)(originalPatches.row(i%originalPatches.rows)).data);
+		if (i%200 == 0){
+			std::cout<<"Iteration: "<<i<<std::endl;
+		}
 	}
-
 	std::cout<<"Learning dictionary from original image completed."<<std::endl;
+	int patchesAlongX = 25;
+	visualizeDictionary(learnDict.Dt, patchHeight, patchWidth, nComponents, patchesAlongX);
+	
 
 	// generate patches from original image, here we need to store mean and std, so it is slightly different than above
 	std::cout<<"Extracting patches from noisy image... "<<std::endl;
@@ -117,6 +131,9 @@ int main(int argc, char** argv){
 	std::cout<<"Number of vectors to be reconstructed: "<<reconstructedPatches.rows<<std::endl;
 	for(int i = 0; i < reconstructedPatches.rows; i++){
 		//std::cout<<i<<std::endl;
+		if (i%1000 == 0){
+			std::cout<<i<<std::endl;
+		}
 		learnDict.recover((Real*)(distortedPatches.row(i)).data, (Real*)(reconstructedPatches.row(i)).data);
 	}
 	std::cout<<"Reconstructing noisy image patches using dictionary learned from original image completed."<<std::endl;
@@ -129,9 +146,10 @@ int main(int argc, char** argv){
 	cv::Mat reconstructedImageGrayFloat = reconstructImgFromPatches(reconstructedPatches, patchHeight, patchWidth, distortedImageGrayFloat.rows, distortedImageGrayFloat.cols);
 	std::cout<<"Constructing image from learned patches completed."<<std::endl;
 	// display three windows to visualize results:
-	cv::namedWindow("Original Image", CV_WINDOW_AUTOSIZE );
-	cv::namedWindow("Distorted Image", CV_WINDOW_AUTOSIZE );
-	cv::namedWindow("Reconstructed Image", CV_WINDOW_AUTOSIZE );
+	timer.print(1000);
+	cv::namedWindow("Original Image", CV_WINDOW_NORMAL );
+	cv::namedWindow("Distorted Image", CV_WINDOW_NORMAL );
+	cv::namedWindow("Reconstructed Image", CV_WINDOW_NORMAL );
 
 	cv::imshow("Original Image", originalImageGrayFloat);
 	cv::imshow("Distorted Image", distortedImageGrayFloat);
@@ -163,11 +181,12 @@ cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, i
 		row_.reshape(1,patchHeight);
 		int idX = i % nPatchesAlongHorizontal;
 		int idY = i / nPatchesAlongHorizontal;
-		row_=row_.reshape(1,patchHeight);
+		row_=row_.reshape(1, patchHeight);
 		cv::Mat roi = (img(cv::Rect_<Real>(idX, idY, patchWidth, patchHeight))).clone();
 		roi += row_;
 		roi.copyTo(img(cv::Rect_<Real>(idX, idY, patchWidth, patchHeight)));
 	}
+
 	// average out over patches
 	for(int i =0; i < imgHeight; i++){
 		for(int j = 0; j < imgWidth; j++){
@@ -189,6 +208,25 @@ cv::Mat_<Real> reconstructImgFromPatches(cv::Mat_<Real> data, int patchHeight, i
 
 */
 
+void visualizeDictionary(Real *Dt, int patchHeight, int patchWidth, int nComponents, int patchesAlongX){
+	cv::Mat img(nComponents/patchesAlongX*patchHeight, patchesAlongX*patchWidth, CV_64FC1);
+	cv::Mat row(1, patchWidth*patchHeight, CV_64FC1);
+	
+	for (int i = 0; i < nComponents; i ++){
+		cv::Mat r = cv::Mat(patchHeight, patchWidth, CV_64FC1, Dt[i*patchWidth*patchWidth]);
+		row = r.clone();
+		std::cout<<i<<"   "<<std::endl;
+		//row.reshape(1, patchHeight);
+		row.copyTo(img(cv::Rect_<Real>((i%patchesAlongX)*patchWidth, (i/patchesAlongX)*patchHeight, patchWidth, patchHeight)));
+	}
+
+	cv::namedWindow("LearnedPatches", CV_WINDOW_NORMAL);
+	cv::imshow("LearnedPatches", img);
+	cv::waitKey(0);
+}
+
+
+
 cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchWidth){
 	int nPatchesAlongHorizontal = img.cols - patchWidth + 1;
 	int nPatchesAlongVertical = img.rows - patchHeight + 1;
@@ -202,7 +240,6 @@ cv::Mat_<Real> generate2DPatches(cv::Mat_<Real> img, int patchHeight, int patchW
 				tmp = tmp.clone();
 			}
 			tmp=tmp.reshape(0, 1);
-
 			tmp.copyTo(data.row(i*nPatchesAlongHorizontal + j));
 		}
 
