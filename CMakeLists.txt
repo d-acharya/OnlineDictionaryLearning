@@ -5,6 +5,7 @@ find_package(OpenCV REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/src)
+include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/lib)
 
 add_library(mathOperations src/lars_light/src/mathOperations.cpp)
 add_library(lars src/lars_light/src/lars.cpp)

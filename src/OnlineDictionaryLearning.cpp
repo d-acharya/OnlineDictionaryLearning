@@ -12,7 +12,8 @@ m(m_in), k(k_in), epsilon(1e-2), T(5) {
   At = (Real*) malloc(k * k * sizeof(Real));
   Bt = (Real*) malloc(k * m * sizeof(Real));
   tmp = (Real*) calloc(m, sizeof(Real));
-  lars_ptr = new Lars(Dt, m, k, lambda_in);
+  Timer timer(65536);
+  lars_ptr = new Lars(Dt, m, k, lambda_in, timer);
 }
 
 void DictionaryLearning::update_dict() {

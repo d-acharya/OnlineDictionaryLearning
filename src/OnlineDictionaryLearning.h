@@ -1,5 +1,5 @@
-#include "util.h"
 #include "lars.h"
+#include "util.h"
 
 #ifndef DICTIONARY_LEARNING_H
 #define DICTIONARY_LEARNING_H
