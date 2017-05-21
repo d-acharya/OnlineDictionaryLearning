@@ -13,6 +13,7 @@ int main() {
 
   // Initailize data
   int D = 20, K = 40, r = 2000;
+  int T = 500;
   Real *y = (Real*) malloc(D * r * sizeof(Real));
   Real *y_r = (Real*) malloc(D * sizeof(Real));
   Idx *beta;
@@ -31,9 +32,9 @@ int main() {
 
   Real error(0.0), min_error(1e10), max_error(0.0);
   int count;
-  for (int t = 0; t < 1000; t++) {
+  for (int t = 0; t < T; t++) {
     for (int i = 0; i < r/2; i++) {
-      if (l2Norm(y+D*i, D) == 0) continue;
+      if (l2Norm(y+D*i, D) == 0) continue; //skip zero vectors
       dl.iterate(y+D*i);
     }
     error = 0.0, min_error = 1e10, max_error = 0.0;
@@ -43,13 +44,12 @@ int main() {
       dl.recover(y+D*i, y_r);
       vecDiff(y+D*i, y_r, y_r, D);
       Real norm = l2Norm(y_r, D);
-      error += norm;
+      error += norm * norm;
       count++;
       min_error = fmin(min_error, norm);
       max_error = fmax(max_error, norm);
     }
-    error = sqrt(error);
-    error /= count;
+    error = sqrt(error) / count;
     cout << "iteration " << t << ", test mse = " << error
          << "(max=" << max_error << ", min=" << min_error << ")" << endl;
   }
@@ -81,13 +81,12 @@ int main() {
     dl.recover(y+D*i, y_r);
     vecDiff(y+D*i, y_r, y_r, D);
     Real norm = l2Norm(y_r, D);
-    error += norm;
+    error += norm * norm;
     count++;
     min_error = fmin(min_error, norm);
     max_error = fmax(max_error, norm);
   }
-  error = sqrt(error);
-  error /= count;
+  error = sqrt(error) / count;
   cout << "the best MSE possible = " << error;
   cout << "(max=" << max_error << ", min=" << min_error << ")" << endl << endl;
 
@@ -100,13 +99,12 @@ int main() {
     dl.recover(y+D*i, y_r);
     vecDiff(y+D*i, y_r, y_r, D);
     Real norm = l2Norm(y_r, D);
-    error += norm;
+    error += norm * norm;
     count++;
     min_error = fmin(min_error, norm);
     max_error = fmax(max_error, norm);
   }
-  error = sqrt(error);
-  error /= count;
+  error = sqrt(error) / count;
   cout << "the worst MSE possible = " << error;
   cout << "(max=" << max_error << ", min=" << min_error << ")" << endl;
   /*
