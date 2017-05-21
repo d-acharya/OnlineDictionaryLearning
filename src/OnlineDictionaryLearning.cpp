@@ -31,14 +31,82 @@ void DictionaryLearning::update_dict() {
       if (At[j*k + j] < epsilon) continue; // when At[j*k + j] is zero
       mvm(Dt, true, At+j*k, tmp, k, m); //tmp = Daj
 
-      vecDiff(Bt+j*m, tmp, tmp, m);
+      
+      //vecDiff(Bt+j*m, tmp, tmp, m);
+      
+      int endM = m-(m%4);
+      for(int id = 0; id < endM; id+=4){
+        __m256d tmpVec = _mm256_loadu_pd(&tmp[id]);
+        __m256d BtVec = _mm256_loadu_pd(&Bt[j*m+id]);
+        __m256d diff = _mm256_sub_pd(BtVec, tmpVec);
+        _mm256_storeu_pd(&tmp[id], diff);
+      }
+      for(int id = endM; id < m; id++){
+        tmp[id] = Bt[j*m+id]-tmp[id];
+      }
+
+
+
       print("A%d%d = %.3f\n", j, j, At[j*k + j]);
       for (int l = 0; l < lars_ptr->active_itr; l++)
         print("(%d, %.3f) ", lars_ptr->beta[l].id, lars_ptr->beta[l].v);
-      axpy(1.0/At[j*k + j], tmp, Dt+j*m, m);
-      Real norm = l2Norm(Dt+j*m, m);
+      
+
+      //axpy(1.0/At[j*k + j], tmp, Dt+j*m, m);
+      
+      endM = m-(m%4);
+      double recip = 1.0/At[j*k + j];
+      __m256d coef = _mm256_set1_pd(recip);
+      for(int id = 0; id < endM; id+=4){
+        __m256d tmpVec = _mm256_load_pd(tmp + id);
+        __m256d DtVec = _mm256_loadu_pd(&Dt[j*m+id]);
+        __m256d sum = _mm256_fmadd_pd(coef, tmpVec, DtVec);
+        _mm256_storeu_pd(&Dt[j*m+id], sum);
+      }
+      for(int id = endM; id < m; id++){
+        Dt[j*m+id] = recip*tmp[id]+Dt[j*m+id];
+      }
+      
+
+
+      //Real norm = l2Norm(Dt+j*m, m);
+ 
+      double norm = 0.;
+      endM = m-(m%4);
+      __m256d accum = _mm256_set1_pd(0.);
+      for(int id = 0; id < endM; id+=4){
+        __m256d xVec = _mm256_load_pd(&Dt[j*m+id]);
+        __m256d accum = _mm256_fmadd_pd(xVec, xVec, accum);
+      }
+      __m256d hSum = _mm256_hadd_pd(accum,accum);
+      norm = ((double*)&hSum)[0] + ((double*)&hSum)[2];
+
+      for(int id = endM; id < m; id++){
+        norm += Dt[j*m+id]*Dt[j*m+id];
+      }
+      norm = sqrt(norm);
+
+
+
       print("norm(dj) = %.3f\n", norm);
-      dot(1.0/norm, Dt+j*m, m);
+
+ //     dot(1.0/norm, Dt+j*m, m);
+ 
+      //int 
+      endM = m-(m%4);     
+      recip = 1.0/norm;
+      coef = _mm256_set1_pd(recip);
+      //double * ptr = &Dt[j*m];
+      for(int id = 0; id < endM; id+=4){
+        __m256d xVec = _mm256_loadu_pd(&Dt[j*m+id]); // gives seg fault
+        __m256d prod = _mm256_mul_pd(xVec, coef);
+        _mm256_storeu_pd(&Dt[j*m+id], prod);
+      }
+      for(int id = endM; id < m; id++){
+        Dt[j*m+id] = recip*Dt[j*m+id];
+      }
+   
+
 
     }
   }
