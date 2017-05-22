@@ -69,7 +69,6 @@ face = face[::2, ::2] + face[1::2, ::2] + face[::2, 1::2] + face[1::2, 1::2]
 
 face /= 4.0
 height, width = face.shape
-
 # Distort the right half of the image
 print('Distorting image...')
 distorted = face.copy()
