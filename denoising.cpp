@@ -22,13 +22,13 @@ int main(int argc, char** argv){
 	const char* distortedImagePath = argv[2];
 
 	// constants used for computations
-	int patchHeight = 7;
-	int patchWidth = 7;
-	int nComponents = 200;
+	int patchHeight = 12;
+	int patchWidth = 12;
+	int nComponents = 400;
 	// lengthOfComponent is lengthOfPatch
 	int lengthOfComponent = patchHeight*patchWidth;
-	int nIterations = 4000;
-	Real regularizationParameter = 1.0;
+	int nIterations = 200000;
+	Real regularizationParameter = .5;
 	int transformNNonZeroCoef = 5;
 
 	// read single channel of images
@@ -80,8 +80,8 @@ int main(int argc, char** argv){
 		originalPatchesMean.push_back((Real)originalPatchesColumnwiseMean.at<Real>(0));
 		originalPatchesStd.push_back((Real)originalPatchesColumnwiseStd.at<Real>(0));
 	}
-
-
+	std::cout<<originalPatchesStd<<std::endl;
+	std::cout<<originalPatchesMean<<std::endl;
 //	cv::namedWindow("Original Imag1e", CV_WINDOW_AUTOSIZE );
 //	cv::imshow("Original Imag1e", originalImageGrayFloat);
 //	cv::waitKey(0);
@@ -92,8 +92,10 @@ int main(int argc, char** argv){
 	Timer timer(END_ITR);
 	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents, timer);
 
+	//std::cout<<originalPatches.row(1);
+	//std::cout<<originalPatches.rows<<"  "<<originalPatches.cols<<std::endl;
 	for(int i = 0; i < nIterations; i++){
-		learnDict.iterate((Real*)(originalPatches.row(i%originalPatches.rows)).data);
+		learnDict.iterate((Real*)(originalPatches.row((i)%originalPatches.rows)).data);
 		if (i%200 == 0){
 			std::cout<<"Iteration: "<<i<<std::endl;
 		}
@@ -102,11 +104,10 @@ int main(int argc, char** argv){
 	std::cout<<"Learned Dictionary"<<std::endl;
 	for(int c = 0; c < nComponents; c++){
 		for(int d = 0; d < patchHeight*patchWidth; d++){
-			std::cout<<learnDict.Dt[c*patchHeight*patchWidth + d];
+			std::cout<<learnDict.Dt[c*patchHeight*patchWidth + d]<<" ";
 			// visualize dictionary
 		}
 		std::cout<<std::endl;
-
 	}
 
 	std::cout<<"Learning dictionary from original image completed."<<std::endl;	
@@ -137,7 +138,8 @@ int main(int argc, char** argv){
 	std::cout<<"Normalizing noisy data image completed."<<std::endl;
 
 
-	int patchesAlongX = 25;
+	int patchesAlongX = 10;
+	//std::cout<<distortedPatchesMean<<std::endl;
 	visualizeDictionary(learnDict.Dt, distortedPatchesMean, patchHeight, patchWidth, nComponents, patchesAlongX);
 
 
@@ -229,7 +231,8 @@ void visualizeDictionary(Real *Dt, cv::Mat mean, int patchHeight, int patchWidth
 	cv::Mat row(1, patchWidth*patchHeight, CV_64FC1);
 	
 	for (int i = 0; i < nComponents; i ++){
-		cv::Mat r = cv::Mat(patchHeight, patchWidth, CV_64FC1, Dt[i*patchWidth*patchWidth]);
+		cv::Mat r = cv::Mat(patchHeight, patchWidth, CV_64FC1, &Dt[i*patchWidth*patchHeight]);
+		//std::cout<<r<<std::endl;
 		cv::Mat temp = mean.clone();
 		
 		temp=temp.reshape(1,patchHeight);
@@ -241,6 +244,7 @@ void visualizeDictionary(Real *Dt, cv::Mat mean, int patchHeight, int patchWidth
 		//row = (r.reshape(1,patchHeight)).clone();
 		
 		//row.reshape(1, patchHeight);
+		
 		r.copyTo(img(cv::Rect_<Real>((i%patchesAlongX)*patchWidth, (i/patchesAlongX)*patchHeight, patchWidth, patchHeight)));
 	}
 

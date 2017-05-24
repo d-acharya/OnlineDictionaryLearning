@@ -14,7 +14,7 @@ using namespace std;
 int main() {
 
   // Initailize data
-  int D = 20, K = 40, r = 2000;
+  int D = 32, K = 16, r = 5000;
   Real *y = (Real*) malloc(D * r * sizeof(Real));
   Real *y_r = (Real*) malloc(D * sizeof(Real));
   Idx *beta;
@@ -34,7 +34,7 @@ int main() {
 
   Real error(0.0), min_error(1e10), max_error(0.0);
   int count;
-  for (int t = 0; t < 1000; t++) {
+  for (int t = 0; t < 500; t++) {
     for (int i = 0; i < r/2; i++) {
       if (l2Norm(y+D*i, D) == 0) continue;
       dl.iterate(y+D*i);
