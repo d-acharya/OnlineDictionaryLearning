@@ -4,7 +4,7 @@ project(ODLForSparseCoding)
 find_package(OpenCV REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-	set(CMAKE_CXX_FLAGS "-g -O3 -mavx -mfma -m64 -std=c++0x ")
+	set(CMAKE_CXX_FLAGS "-O3 -mavx2 -mfma -m64 -std=c++0x -ffast-math")
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

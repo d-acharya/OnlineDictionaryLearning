@@ -22,13 +22,13 @@ int main(int argc, char** argv){
 	const char* distortedImagePath = argv[2];
 
 	// constants used for computations
-	int patchHeight = 10;
-	int patchWidth = 10;
-	int nComponents = 250;
+	int patchHeight = 12;
+	int patchWidth = 12;
+	int nComponents = 400;
 	// lengthOfComponent is lengthOfPatch
 	int lengthOfComponent = patchHeight*patchWidth;
-	int nIterations = 4000;
-	Real regularizationParameter = 1.0;
+	int nIterations = 200000;
+	Real regularizationParameter = .5;
 	int transformNNonZeroCoef = 5;
 
 	// read single channel of images
@@ -92,10 +92,10 @@ int main(int argc, char** argv){
 	Timer timer(END_ITR);
 	DictionaryLearning learnDict(regularizationParameter, lengthOfComponent, nComponents, timer);
 
-	std::cout<<originalPatches.row(1);
-	std::cout<<originalPatches.rows<<"  "<<originalPatches.cols<<std::endl;
+	//std::cout<<originalPatches.row(1);
+	//std::cout<<originalPatches.rows<<"  "<<originalPatches.cols<<std::endl;
 	for(int i = 0; i < nIterations; i++){
-		learnDict.iterate((Real*)(originalPatches.row(i%originalPatches.rows)).data);
+		learnDict.iterate((Real*)(originalPatches.row((i)%originalPatches.rows)).data);
 		if (i%200 == 0){
 			std::cout<<"Iteration: "<<i<<std::endl;
 		}
