@@ -16,8 +16,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "-g -O3 -mavx -mfma -m64 -std=c++0x")
 endif()
 
-
-
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/lib)

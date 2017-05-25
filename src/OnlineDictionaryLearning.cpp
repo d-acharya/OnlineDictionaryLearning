@@ -92,11 +92,16 @@ void DictionaryLearning::update_dict() {
       
       timer.start(DICT_MVM);
       //mvm(Dt, true, At+j*k, tmp, k, m); //tmp = Daj
+      //void cblas_dgemv(const enum CBLAS_ORDER __Order, const enum CBLAS_TRANSPOSE __TransA, const int __M, const int __N, const double __alpha, const double *__A, const int __lda, const double *__X, const int __incX, const double __beta, double *__Y, const int __incY);
       double one = 1.0;
       double zero = 0.0;
       int iInt = 1;
-      dgemv("T", &k, &m, &one, Dt, &m, &At[j*k], &iInt, &zero, tmp, &iInt);
-      /*   
+      //std::cout<<"dgemv"<<std::endl;
+      //dgemv("T", &m, &k, &one, Dt, &m, &At[j*k], &iInt, &zero, tmp, &iInt);
+      //void cblas_dgemv(const enum CBLAS_ORDER __Order, const enum CBLAS_TRANSPOSE __TransA, const int __M, const int __N, const double __alpha, const double *__A, const int __lda, const double *__X, const int __incX, const double __beta, double *__Y, const int __incY);
+      //cblas_dgemv();
+      //std::cout<<"dgemv"<<std::endl;
+      
       for (int id1 = 0; id1 < k; id1++){
         double Ai = At[j*k+id1];
         __m256d vec = _mm256_set1_pd(Ai);
@@ -111,13 +116,29 @@ void DictionaryLearning::update_dict() {
         for(int id2 = endId; id2 < m; id2++){
           tmp[id2] += Dt[id1*m+id2]*Ai;
         }
-
       }
-      */
+      
       timer.end(DICT_MVM);
 
       // fusion of all operations
+      /*
+      for (int id1 = 0; id1 < k; id1++){
+        double Ai = At[j*k+id1];
+        __m256d vec = _mm256_set1_pd(Ai);
+        int endId = m - (m%4);
+        for(int id2 = 0; id2 < endId; id2+=4){
+          __m256d DtRow = _mm256_load_pd(&Dt[id1*m+id2]);
+          __m256d tmpVec = _mm256_load_pd(&tmp[id2]);
+          __m256d res = _mm256_add_pd(tmpVec, _mm256_mul_pd(DtRow, tmpVec));
+          _mm256_store_pd(&tmp[id2], res);
+        }
 
+        for(int id2 = endId; id2 < m; id2++){
+          tmp[id2] += Dt[id1*m+id2]*Ai;
+        }
+      }
+
+      */
 
       //vecDiff(Bt+j*m, tmp, tmp, m);
 
