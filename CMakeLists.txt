@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(ODLForSparseCoding)
-
+set(CMAKE_CXX_COMPILER /opt/intel/compilers_and_libraries_2017.0.098/linux/bin/intel64/icpc)
 find_package(OpenCV REQUIRED)
 #find_package(MKL Required)
 
