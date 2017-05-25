@@ -14,7 +14,7 @@ using namespace std;
 int main() {
 
   // Initailize data
-  int D = 10, K = 15, r = 5000;
+  int D = 64, K = 16, r = 5000;
   Real *y = (Real*) malloc(D * r * sizeof(Real));
   Real *y_r = (Real*) malloc(D * sizeof(Real));
   Idx *beta;
