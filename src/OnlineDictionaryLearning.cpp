@@ -85,7 +85,7 @@ void DictionaryLearning::update_dict() {
 */      
 
       
-      //Real norm = 0;
+      Real norm = 0;
       
       Real recipA = 1.0/At[j*k + j];
       for (int x = 0; x < m/4; x++){
@@ -93,6 +93,7 @@ void DictionaryLearning::update_dict() {
         double a2 = 0.0;
         double a3 = 0.0;
         double a4 = 0.0;
+
         int bS=4;
         for (int y = 0; y < k/bS; y++) {
           a1 += Dt[(bS*y+0) * m + 4*x] * At[j*k+(bS*y+0)];
@@ -123,15 +124,23 @@ void DictionaryLearning::update_dict() {
         //norm += a2*a2;
         //Dt[j*m+2*x] = a1;
         //Dt[j*m+2*x+1] = a2;
-        tmp[4*x]=Bt[j*m+4*x]-a1;
+        /*tmp[4*x]=Bt[j*m+4*x]-a1;
         tmp[4*x+1]=Bt[j*m+4*x+1]-a2;
         tmp[4*x+2]=Bt[j*m+4*x+2]-a3;
-        tmp[4*x+3]=Bt[j*m+4*x+3]-a4;
+        tmp[4*x+3]=Bt[j*m+4*x+3]-a4;*/
+        Dt[j*m+4*x] += recipA*(Bt[j*m+4*x]-a1);
+        norm +=Dt[j*m+4*x]*Dt[j*m+4*x];
+        Dt[j*m+4*x+1] += recipA*(Bt[j*m+4*x+1]-a2);
+        norm +=Dt[j*m+4*x+1]*Dt[j*m+4*x+1];
+        Dt[j*m+4*x+2] += recipA*(Bt[j*m+4*x+2]-a3);
+        norm +=Dt[j*m+4*x+2]*Dt[j*m+4*x+2];
+        Dt[j*m+4*x+3] += recipA*(Bt[j*m+4*x+3]-a4);
+        norm +=Dt[j*m+4*x+3]*Dt[j*m+4*x+3];
         //tmp[2*x+2]=a3;
         //tmp[2*x+3]=a4;
       }
       
-      //norm = sqrt(norm);
+      norm = sqrt(norm);
       
 
       //timer.end(DICT_MVM);
@@ -153,14 +162,14 @@ void DictionaryLearning::update_dict() {
       //timer.start(AXPY);
       
       //Real recipA = 1.0/At[j*k + j];
-      cblas_daxpy(m, recipA, tmp, 1, &Dt[j*m], 1);
+      //cblas_daxpy(m, recipA, tmp, 1, &Dt[j*m], 1);
       //axpy(recipA, tmp, Dt+j*m, m);
       
       //timer.end(AXPY);
 
 
       //timer.start(DICT_L2);
-      Real norm = cblas_dnrm2(m, Dt+j*m, 1);
+      //Real norm = cblas_dnrm2(m, Dt+j*m, 1);
       //Real norm = l2Norm(Dt+j*m, m);
       //timer.end(DICT_L2);
 
