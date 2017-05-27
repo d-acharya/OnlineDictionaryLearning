@@ -96,25 +96,31 @@ void DictionaryLearning::update_dict() {
 
         int bS=4;
         for (int y = 0; y < k/bS; y++) {
-          a1 += Dt[(bS*y+0) * m + 4*x] * At[j*k+(bS*y+0)];
-          a2 += Dt[(bS*y+0) * m + 4*x+1] * At[j*k+(bS*y+0)];
-          a3 += Dt[(bS*y+0) * m + 4*x+2] * At[j*k+(bS*y+0)];
-          a4 += Dt[(bS*y+0) * m + 4*x+3] * At[j*k+(bS*y+0)];
 
-          a1 += Dt[(bS*y+1) * m + 4*x] * At[j*k+(bS*y+1)];
-          a2 += Dt[(bS*y+1) * m + 4*x+1] * At[j*k+(bS*y+1)];
-          a3 += Dt[(bS*y+1) * m + 4*x+2] * At[j*k+(bS*y+1)];
-          a4 += Dt[(bS*y+1) * m + 4*x+3] * At[j*k+(bS*y+1)];
+          double At1 = At[j*k+(bS*y+0)];
+          double At2 = At[j*k+(bS*y+1)];
+          double At3 = At[j*k+(bS*y+2)];
+          double At4 = At[j*k+(bS*y+3)];
 
-          a1 += Dt[(bS*y+2) * m + 4*x] * At[j*k+(bS*y+2)];
-          a2 += Dt[(bS*y+2) * m + 4*x+1] * At[j*k+(bS*y+2)];
-          a3 += Dt[(bS*y+2) * m + 4*x+2] * At[j*k+(bS*y+2)];
-          a4 += Dt[(bS*y+2) * m + 4*x+3] * At[j*k+(bS*y+2)];
+          a1 += Dt[(bS*y+0) * m + 4*x] * At1;
+          a2 += Dt[(bS*y+0) * m + 4*x+1] * At1;
+          a3 += Dt[(bS*y+0) * m + 4*x+2] * At1;
+          a4 += Dt[(bS*y+0) * m + 4*x+3] * At1;
 
-          a1 += Dt[(bS*y+3) * m + 4*x] * At[j*k+(bS*y+3)];
-          a2 += Dt[(bS*y+3) * m + 4*x+1] * At[j*k+(bS*y+3)];
-          a3 += Dt[(bS*y+3) * m + 4*x+2] * At[j*k+(bS*y+3)];
-          a4 += Dt[(bS*y+3) * m + 4*x+3] * At[j*k+(bS*y+3)];
+          a1 += Dt[(bS*y+1) * m + 4*x] * At2;
+          a2 += Dt[(bS*y+1) * m + 4*x+1] * At2;
+          a3 += Dt[(bS*y+1) * m + 4*x+2] * At2;
+          a4 += Dt[(bS*y+1) * m + 4*x+3] * At2;
+
+          a1 += Dt[(bS*y+2) * m + 4*x] * At3;
+          a2 += Dt[(bS*y+2) * m + 4*x+1] * At3;
+          a3 += Dt[(bS*y+2) * m + 4*x+2] * At3;
+          a4 += Dt[(bS*y+2) * m + 4*x+3] * At3;
+
+          a1 += Dt[(bS*y+3) * m + 4*x] * At4;
+          a2 += Dt[(bS*y+3) * m + 4*x+1] * At4;
+          a3 += Dt[(bS*y+3) * m + 4*x+2] * At4;
+          a4 += Dt[(bS*y+3) * m + 4*x+3] * At4;
 
         }
         //Real a2;
@@ -128,14 +134,25 @@ void DictionaryLearning::update_dict() {
         tmp[4*x+1]=Bt[j*m+4*x+1]-a2;
         tmp[4*x+2]=Bt[j*m+4*x+2]-a3;
         tmp[4*x+3]=Bt[j*m+4*x+3]-a4;*/
-        Dt[j*m+4*x] += recipA*(Bt[j*m+4*x]-a1);
-        norm +=Dt[j*m+4*x]*Dt[j*m+4*x];
-        Dt[j*m+4*x+1] += recipA*(Bt[j*m+4*x+1]-a2);
-        norm +=Dt[j*m+4*x+1]*Dt[j*m+4*x+1];
-        Dt[j*m+4*x+2] += recipA*(Bt[j*m+4*x+2]-a3);
-        norm +=Dt[j*m+4*x+2]*Dt[j*m+4*x+2];
-        Dt[j*m+4*x+3] += recipA*(Bt[j*m+4*x+3]-a4);
-        norm +=Dt[j*m+4*x+3]*Dt[j*m+4*x+3];
+        double b1 = Bt[j*m+4*x];
+        double b2 = Bt[j*m+4*x+1];
+        double b3 = Bt[j*m+4*x+2];
+        double b4 = Bt[j*m+4*x+3];
+
+        double d1 = recipA*(b1-a1);
+        double d2 = recipA*(b2-a2);
+        double d3 = recipA*(b3-a3);
+        double d4 = recipA*(b4-a4);
+
+        norm +=d1*d1;
+        norm +=d2*d2;
+        norm +=d3*d3;
+        norm +=d4*d4;
+
+        Dt[j*m+4*x+0] += d1;
+        Dt[j*m+4*x+1] += d2;
+        Dt[j*m+4*x+2] += d3;
+        Dt[j*m+4*x+3] += d4;
         //tmp[2*x+2]=a3;
         //tmp[2*x+3]=a4;
       }
