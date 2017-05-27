@@ -12,6 +12,9 @@
 #define is_aligned(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
 
+
+
+
 DictionaryLearning::DictionaryLearning(Real lambda_in, int m_in, int k_in, Timer &timer) :
 m(m_in), k(k_in), epsilon(1e-2), T(1), timer(timer) {
 
@@ -25,7 +28,7 @@ m(m_in), k(k_in), epsilon(1e-2), T(1), timer(timer) {
   if(!(((unsigned long)tmp & 31) == 0)){
     std::cout<<"Not aligned"<<std::endl;
   }
-
+  skips=0;
   for(int i = 0; i < m; i++) tmp[i] = 0.;
   
   lars_ptr = new Lars(Dt, m, k, lambda_in, timer);
@@ -44,9 +47,10 @@ void DictionaryLearning::update_dict() {
   
   for (int t = 0; t < T; t++) {
     converge = true;
+
     for (int j = 0; j < k; j++) {
-      if (At[j*k + j] < epsilon) continue; 
-      
+      if (At[j*k + j] < epsilon) continue;//{ skips++; continue;  }
+      //noSkips ++;
       // Scalar version of code
       //for(int i = 0; i < m; i++) tmp[i] = 0.;
       //mvm(Dt, true, At+j*k, tmp, k, m); //tmp = Daj
@@ -65,12 +69,75 @@ void DictionaryLearning::update_dict() {
       double zero = 0.0;
       int iInt = 1;      
       
-      timer.start(DICT_MVM);
-      cblas_dgemv(CblasColMajor,CblasNoTrans,m, k, one, Dt, m, &At[j*k], iInt, zero, tmp, iInt);
+      //timer.start(DICT_MVM);
+      //cblas_dgemv(CblasColMajor,CblasNoTrans,m, k, one, Dt, m, &At[j*k], iInt, zero, tmp, iInt);
       //mvm(Dt, true, At+j*k, tmp, k, m); //tmp = Daj
-      timer.end(DICT_MVM);
+      
+/*      
+      for (int x = 0; x < m; x++) {
+        tmp[x] = 0.0;
+        //double a = 0;
+        for (int y = 0; y < k; y++) {
+          tmp[x] += Dt[y * m + x] * At[j*k+y];
+        }
+        //tmp[x] = a;
+      }
+*/      
+
+      
+      //Real norm = 0;
+      
+      Real recipA = 1.0/At[j*k + j];
+      for (int x = 0; x < m/4; x++){
+        double a1 = 0.0;
+        double a2 = 0.0;
+        double a3 = 0.0;
+        double a4 = 0.0;
+        int bS=4;
+        for (int y = 0; y < k/bS; y++) {
+          a1 += Dt[(bS*y+0) * m + 4*x] * At[j*k+(bS*y+0)];
+          a2 += Dt[(bS*y+0) * m + 4*x+1] * At[j*k+(bS*y+0)];
+          a3 += Dt[(bS*y+0) * m + 4*x+2] * At[j*k+(bS*y+0)];
+          a4 += Dt[(bS*y+0) * m + 4*x+3] * At[j*k+(bS*y+0)];
+
+          a1 += Dt[(bS*y+1) * m + 4*x] * At[j*k+(bS*y+1)];
+          a2 += Dt[(bS*y+1) * m + 4*x+1] * At[j*k+(bS*y+1)];
+          a3 += Dt[(bS*y+1) * m + 4*x+2] * At[j*k+(bS*y+1)];
+          a4 += Dt[(bS*y+1) * m + 4*x+3] * At[j*k+(bS*y+1)];
+
+          a1 += Dt[(bS*y+2) * m + 4*x] * At[j*k+(bS*y+2)];
+          a2 += Dt[(bS*y+2) * m + 4*x+1] * At[j*k+(bS*y+2)];
+          a3 += Dt[(bS*y+2) * m + 4*x+2] * At[j*k+(bS*y+2)];
+          a4 += Dt[(bS*y+2) * m + 4*x+3] * At[j*k+(bS*y+2)];
+
+          a1 += Dt[(bS*y+3) * m + 4*x] * At[j*k+(bS*y+3)];
+          a2 += Dt[(bS*y+3) * m + 4*x+1] * At[j*k+(bS*y+3)];
+          a3 += Dt[(bS*y+3) * m + 4*x+2] * At[j*k+(bS*y+3)];
+          a4 += Dt[(bS*y+3) * m + 4*x+3] * At[j*k+(bS*y+3)];
+
+        }
+        //Real a2;
+        //Real a2 = Dt[j*m+x];
+        //a2 = recipA*(Bt[j*m+x]-a)+a2;
+        //Dt[j*m+x] = a2;
+        //norm += a2*a2;
+        //Dt[j*m+2*x] = a1;
+        //Dt[j*m+2*x+1] = a2;
+        tmp[4*x]=Bt[j*m+4*x]-a1;
+        tmp[4*x+1]=Bt[j*m+4*x+1]-a2;
+        tmp[4*x+2]=Bt[j*m+4*x+2]-a3;
+        tmp[4*x+3]=Bt[j*m+4*x+3]-a4;
+        //tmp[2*x+2]=a3;
+        //tmp[2*x+3]=a4;
+      }
+      
+      //norm = sqrt(norm);
+      
+
+      //timer.end(DICT_MVM);
       
       //vecDiff(Bt+j*m, tmp, tmp, m);
+      /*
       int endM = m-(m%4);
       for(int id = 0; id < endM; id+=4){
         __m256d tmpVec = _mm256_load_pd(&tmp[id]);
@@ -81,23 +148,25 @@ void DictionaryLearning::update_dict() {
       for(int id = endM; id < m; id++){
         tmp[id] = Bt[j*m+id]-tmp[id];
       }
+      */
       
+      //timer.start(AXPY);
       
-      timer.start(AXPY);
-      Real recipA = 1.0/At[j*k + j];
+      //Real recipA = 1.0/At[j*k + j];
       cblas_daxpy(m, recipA, tmp, 1, &Dt[j*m], 1);
       //axpy(recipA, tmp, Dt+j*m, m);
-      timer.end(AXPY);
-
       
-      timer.start(DICT_L2);
+      //timer.end(AXPY);
+
+
+      //timer.start(DICT_L2);
       Real norm = cblas_dnrm2(m, Dt+j*m, 1);
       //Real norm = l2Norm(Dt+j*m, m);
-      timer.end(DICT_L2);
+      //timer.end(DICT_L2);
 
       //dot(1.0/norm, Dt+j*m, m);
-      timer.start(DICT_DOT);
-      endM = m-(m%4);     
+      //timer.start(DICT_DOT);
+      int endM = m-(m%4);     
       Real recip = 1.0/norm;
       __m256d coef = _mm256_set1_pd(recip);
       for(int id = 0; id < endM; id+=4){
@@ -108,11 +177,11 @@ void DictionaryLearning::update_dict() {
       for(int id = endM; id < m; id++){
         Dt[j*m+id] = recip*Dt[j*m+id];
       }
-      timer.end(DICT_DOT);
+      //timer.end(DICT_DOT);
       
     }
   }
-  timer.end(DICT_UPDATE);
+  timer.end(DICT_UPDATE);  
 }
 
 

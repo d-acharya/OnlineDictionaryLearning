@@ -14,9 +14,9 @@ set(CMAKE_CXX_FLAGS "-DMKL_ILP64 -m64 -I${MKLROOT}/include")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mkl")
 #endif()
 
-if(CMAKE_COMPILER_IS_GNUCXX)
+#if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS "-g -O3 -mavx -mfma -m64 -std=c++0x")
-endif()
+#endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src/lars_light/src)

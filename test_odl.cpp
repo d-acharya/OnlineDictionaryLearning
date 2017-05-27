@@ -109,6 +109,7 @@ int main() {
     max_error = fmax(max_error, norm);
   }
   timer.print(1);
+  std::cout<<"Skip rate of dt "<<dl.skips<<"No skips:"<<dl.noSkips<<std::endl;
   error = sqrt(error);
   error /= count;
   cout << "the worst MSE possible = " << error;

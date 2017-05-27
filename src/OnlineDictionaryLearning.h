@@ -14,7 +14,8 @@ struct DictionaryLearning {
   Lars *lars_ptr;
   const Real epsilon;
   Timer timer;
-
+  int skips=0;
+  int noSkips=0;
   DictionaryLearning(Real lambda_in, int m_in, int k_in, Timer &timer);
 
   void update_dict();
